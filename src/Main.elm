@@ -27,8 +27,8 @@ the `transform` function in `Main.elm`.
 import Platform exposing (Program)
 
 
-type alias InputType = Int
-type alias OutputType = Int
+type alias InputType = String
+type alias OutputType = String
 
 port get : (InputType -> msg) -> Sub msg
 
@@ -48,7 +48,7 @@ type alias Model =
 
 
 type Msg
-    = Input Int
+    = Input String
 
 
 type alias Flags =
@@ -76,7 +76,5 @@ subscriptions _ =
 
 transform : InputType -> OutputType
 transform k =
-    case modBy 2 k == 0 of
-        True -> k // 2
-        False -> 3*k+ 1
+    k
 
