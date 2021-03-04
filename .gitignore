@@ -12,3 +12,4 @@ exp/pd-andy.js
 compiled/
 exp/
 src/main.js
+.DS_Store
