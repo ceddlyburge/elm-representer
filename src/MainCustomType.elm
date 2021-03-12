@@ -1,4 +1,4 @@
-port module Main exposing (main)
+port module MainCustomType exposing (main)
 
 import Platform exposing (Program)
 import Elm.Parser
@@ -38,7 +38,11 @@ getIdentifierMapping (WithIdentifierMapping identifierMapping _) =
 normaliseElmFile: WithIdentifierMapping File -> WithIdentifierMapping File
 normaliseElmFile (WithIdentifierMapping identifierMapping elmFile) = 
     let
-        (WithIdentifierMapping nextIdentifierMapping declarations) = List.foldl normaliseDeclarations (WithIdentifierMapping identifierMapping []) elmFile.declarations
+        (WithIdentifierMapping nextIdentifierMapping declarations) = 
+            List.foldl 
+                normaliseDeclarations 
+                (WithIdentifierMapping identifierMapping []) 
+                elmFile.declarations
     in
         WithIdentifierMapping
             nextIdentifierMapping
@@ -52,9 +56,19 @@ normaliseElmFile (WithIdentifierMapping identifierMapping elmFile) =
 normaliseDeclarations : Node Declaration -> WithIdentifierMapping (List (Node Declaration)) -> WithIdentifierMapping (List (Node Declaration))
 normaliseDeclarations declaration (WithIdentifierMapping identifierMapping normalisedDeclarations) =
     let
-        normalisedDeclarationAndMapping = Node.map (normaliseDeclaration identifierMapping) declaration
-        normalisedDeclaration = Node.map withoutIdentifierMapping normalisedDeclarationAndMapping
-        nextIdentifierMapping = Node.map getIdentifierMapping normalisedDeclarationAndMapping |> Node.value
+        normalisedDeclarationAndMapping = 
+            Node.map 
+            (normaliseDeclaration identifierMapping) 
+            declaration
+        normalisedDeclaration = 
+            Node.map 
+            withoutIdentifierMapping 
+            normalisedDeclarationAndMapping
+        nextIdentifierMapping = 
+            Node.map 
+                getIdentifierMapping 
+                normalisedDeclarationAndMapping 
+                |> Node.value
     in
         WithIdentifierMapping
             nextIdentifierMapping
@@ -66,6 +80,7 @@ normaliseDeclaration identifierMapping decl =
         case decl of
             Declaration.AliasDeclaration typeAlias ->
                 normaliseTypeAlias <| WithIdentifierMapping identifierMapping typeAlias
+
 
             _ ->
                 WithIdentifierMapping identifierMapping decl

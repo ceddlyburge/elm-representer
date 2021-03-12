@@ -11,7 +11,6 @@ import Elm.Writer exposing (writeFile, write)
 import Elm.Processing exposing (init, process)
 import List
 import Dict as Dict
-import Html.Attributes exposing (name)
 import Elm.Writer exposing (writeFile)
 
 -- This solution uses extensible records with a type alias for the normaliser / mapping

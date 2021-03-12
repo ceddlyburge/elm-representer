@@ -1,4 +1,4 @@
-port module Main exposing (main)
+port module MainShadowTypes1 exposing (main)
 
 import Platform exposing (Program)
 import Elm.Parser
@@ -25,15 +25,10 @@ import Elm.Writer exposing (writeFile)
 
 -- This solution uses a shadow type structure to that used in Elm Syntax. Having to create
 -- all the shadow types is a bit of an annoyance, as is mapping back from this shadow 
--- structure to the original strucutre, but otherwise I think the solution is a 
--- lot cleaner than the others.
--- It does have quite a lot more code though, but I think its all more obvious and simple
+-- structure to the original strucutre.
+-- It does have quite a lot more code, but I think its all more obvious and simple
 
 -- There might be scope for making things opaque or similar in a future iteration
-
--- Maybe we can not keep the copy of the shadow structure, and convert things as we go, 
--- to avoid having to map back to it at the end (so map back in the individual functions,
--- as opposed to at the end.)
 
 type alias Normalizer =
     { mapping: (Dict.Dict String String)
