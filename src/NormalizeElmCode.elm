@@ -44,37 +44,25 @@ normalize unNormalised =
 
 
 normalizeElmFile : Normalization.State -> File -> (Normalization.State, File)
-normalizeElmFile normalizer original = 
+normalizeElmFile state original = 
     let
-        normalizedDeclarations = 
-            List.foldl 
-                normalizeDeclarations
-                (normalizer, [])
-                original.declarations
+        (state2, normalizedDeclarations) =
+            normalizeNodes normalizeNodeDeclaration state original.declarations
+
         normalizedFile = 
             File
                 original.moduleDefinition
                 original.imports
-                (Tuple.second normalizedDeclarations)
+                normalizedDeclarations
                 []
                 
     in
-        ( Tuple.first normalizedDeclarations
+        ( state2
         , normalizedFile)
 
-normalizeDeclarations : Node Declaration -> (Normalization.State, List (Node Declaration)) -> (Normalization.State, List (Node Declaration))
-normalizeDeclarations original (normalizer, normalizedDeclarations) =
-    let
-        normalizedDeclaration = 
-            Node.map
-                (normalizeDeclaration normalizer)
-                original
-        normalizer1 = Node.value normalizedDeclaration |> Tuple.first
-    in
-        ( normalizer1
-        , Node.map Tuple.second normalizedDeclaration :: normalizedDeclarations
-        )
-
+normalizeNodeDeclaration : Normalization.State -> Node Declaration -> (Normalization.State, Node Declaration)
+normalizeNodeDeclaration state original =
+    normalizeNode normalizeDeclaration state original
 
 normalizeDeclaration : Normalization.State -> Declaration -> (Normalization.State, Declaration)
 normalizeDeclaration state declaration =
@@ -131,19 +119,24 @@ normalizeTypeAlias state original =
                 state2
                 original.generics
         
+        (state4, normalizedTypeAnnotation) = 
+            normalizeNodeTypeAnnotation 
+                state3
+                original.typeAnnotation
+        
         typeAlias = 
             TypeAlias
                 Maybe.Nothing
                 normalizedName
                 normalizedGenerics
-                original.typeAnnotation      
+                normalizedTypeAnnotation      
     in
-        ( state3, typeAlias )
+        ( state4, typeAlias )
 
 
--- normalizeNodeTypeAnnotation : Normalization.State -> Node TypeAnnotation -> (Normalization.State, Node TypeAnnotation)
--- normalizeNodeTypeAnnotation state nodeTypeAnnotation =
-
+normalizeNodeTypeAnnotation : Normalization.State -> Node TypeAnnotation -> (Normalization.State, Node TypeAnnotation)
+normalizeNodeTypeAnnotation state original =
+    normalizeNode normalizeTypeAnnotation state original
 
 normalizeTypeAnnotation : Normalization.State -> TypeAnnotation -> (Normalization.State, TypeAnnotation)
 normalizeTypeAnnotation state typeAnnotation =
@@ -177,12 +170,21 @@ normalizeTypeAnnotation state typeAnnotation =
 --     | FunctionTypeAnnotation (Node TypeAnnotation) (Node TypeAnnotation)
 
 
+
+normalizeNodeString : Normalization.State -> Node String -> (Normalization.State, Node String)
+normalizeNodeString state original =
+    normalizeNode  Normalization.normalize state original
+
+normalizeNodeStrings : Normalization.State -> List (Node String) -> (Normalization.State, List (Node String))
+normalizeNodeStrings state original =
+    normalizeNodes normalizeNodeString state original
+
 normalizeNode : 
-    Normalization.State 
+    (Normalization.State -> a -> (Normalization.State, a)) 
+    -> Normalization.State 
     -> Node a 
-    -> (Normalization.State -> a -> (Normalization.State, a)) 
     -> (Normalization.State, Node a)
-normalizeNode state original normalizer =
+normalizeNode normalizer state original =
     let
         normalized =
             Node.map 
@@ -191,15 +193,6 @@ normalizeNode state original normalizer =
     in
         ( Node.value normalized |> Tuple.first
         , Node.map Tuple.second normalized)
-
-normalizeNodeString : Normalization.State -> Node String -> (Normalization.State, Node String)
-normalizeNodeString state original =
-    normalizeNode state original Normalization.normalize
-
-normalizeNodeStrings : Normalization.State -> List (Node String) -> (Normalization.State, List (Node String))
-normalizeNodeStrings state original =
-    normalizeNodes normalizeNodeString state original
-
 
 normalizeNodes : 
     (Normalization.State -> Node a -> (Normalization.State, Node a)) 
