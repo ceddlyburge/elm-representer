@@ -11,7 +11,7 @@ import Elm.Syntax.Module exposing (Module)
 import Elm.Syntax.Comments exposing (Comment)
 import Elm.Syntax.Documentation exposing (Documentation)
 import Elm.Syntax.Node as Node exposing (Node)
-import Elm.Syntax.TypeAnnotation exposing (TypeAnnotation)
+import Elm.Syntax.TypeAnnotation as TypeAnnotation exposing (TypeAnnotation)
 import Elm.Syntax.Expression exposing (Expression, Function)
 import Elm.Syntax.Type exposing (Type)
 import Elm.Syntax.Infix exposing (Infix)
@@ -25,8 +25,13 @@ import Dict as Dict exposing (Dict)
 import Maybe as Maybe exposing (Maybe)
 
 -- todo
--- update variable names to 'state'
--- copy tests from elm-syntax
+
+-- convention variable names to 
+--  'state'
+--  'original'
+
+-- add tests for type alias
+
 -- do a round trip at the end of this to make sure that the normalization
 -- code is working. This will catch the potential error when a returned
 -- Normalization.State is ignored instead of being passed in to normalize
@@ -141,16 +146,24 @@ normalizeNodeTypeAnnotation state original =
 normalizeTypeAnnotation : Normalization.State -> TypeAnnotation -> (Normalization.State, TypeAnnotation)
 normalizeTypeAnnotation state typeAnnotation =
     case typeAnnotation of
-        -- Record nodeRecordFields ->
-        --     let
-        --         normalizedRecordFields = normalizeRecordFields state nodeRecordFields
-        --     in
-        --         ( Tuple.first normalizedTypeAlias
-        --         , TypeAnnotation.Record (Tuple.second normalizedTypeAlias)
-        --         )
+        TypeAnnotation.Record original ->
+            let
+                normalized = normalizeNodes normalizeNodeRecordField state original
+            in
+                ( Tuple.first normalized
+                , TypeAnnotation.Record (Tuple.second normalized)
+                )
 
         _ ->
             (state, typeAnnotation)
+
+normalizeNodeRecordField : Normalization.State -> Node TypeAnnotation.RecordField -> (Normalization.State, Node TypeAnnotation.RecordField)
+normalizeNodeRecordField state original =
+    normalizeNode normalizeRecordField state original
+
+normalizeRecordField : Normalization.State -> TypeAnnotation.RecordField -> (Normalization.State, TypeAnnotation.RecordField)
+normalizeRecordField state original =
+    (state, original)
 
 {-| Custom type for different type annotations. For example:
   - `Var`: `a`
