@@ -5,6 +5,9 @@ import Dict as Dict exposing (Dict)
 type State =
     State (Dict String String) Int
 
+-- type Normalized a = 
+--     Noralized State 
+
 initialize : State
 initialize =
     State Dict.empty 1

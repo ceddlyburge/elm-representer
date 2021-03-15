@@ -118,31 +118,48 @@ normalizeDeclaration normalizer declaration =
 --                     <| Declaration.Destructuring x y
 
 normalizeTypeAlias : Normalization.State -> TypeAlias -> (Normalization.State, TypeAlias)
-normalizeTypeAlias normalizer original =
+normalizeTypeAlias state original =
     let
-        normalizedName =
-            Node.map 
-            (Normalization.normalize normalizer) 
-            original.name
-        normalizedGenerics = 
-            List.foldl 
-                normalizeNodeStrings 
-                (Node.value normalizedName |> Tuple.first, []) 
+        (state2, normalizedName) =
+            normalizeNodeString 
+                state 
+                original.name
+        
+        (state3, normalizedGenerics) = 
+            normalizeNodeStrings 
+                state2
                 original.generics
+        
         typeAlias = 
             TypeAlias
                 original.documentation
-                (Node.map Tuple.second normalizedName)
-                (Tuple.second normalizedGenerics)
+                normalizedName
+                normalizedGenerics
                 original.typeAnnotation      
     in
-        ( Tuple.first normalizedGenerics
-        , typeAlias)
+        ( state3, typeAlias )
 
--- normalizeDeclarations : Node Declaration -> (Normalization.State, List (Node Declaration)) -> (Normalization.State, List (Node Declaration))
--- normalizeDeclarations original (normalizer, normalizedDeclarations) =
-normalizeNodeStrings: Node String -> (Normalization.State, List (Node String)) -> (Normalization.State, List (Node String))
-normalizeNodeStrings original (state, normalizedNodeStrings) =
+normalizeNodeString : Normalization.State -> Node String -> (Normalization.State, Node String)
+normalizeNodeString state nodeString =
+    let
+        normalizedNodeString =
+            Node.map 
+            (Normalization.normalize state) 
+            nodeString
+        
+    in
+        ( Node.value normalizedNodeString |> Tuple.first
+        , Node.map Tuple.second normalizedNodeString)
+
+normalizeNodeStrings : Normalization.State -> List (Node String) -> (Normalization.State, List (Node String))
+normalizeNodeStrings state original =
+    List.foldl 
+        normalizeAccumulateNodeString 
+        (state, []) 
+        original
+
+normalizeAccumulateNodeString : Node String -> (Normalization.State, List (Node String)) -> (Normalization.State, List (Node String))
+normalizeAccumulateNodeString original (state, normalizedNodeStrings) =
     let
         normalized = 
             Node.map
