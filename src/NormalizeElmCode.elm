@@ -161,9 +161,26 @@ normalizeNodeRecordField : Normalization.State -> Node TypeAnnotation.RecordFiel
 normalizeNodeRecordField state original =
     normalizeNode normalizeRecordField state original
 
+{-| Single field of a record. A name and its type.
+-}
+-- type alias RecordField =
+--     ( Node String, Node TypeAnnotation )
 normalizeRecordField : Normalization.State -> TypeAnnotation.RecordField -> (Normalization.State, TypeAnnotation.RecordField)
 normalizeRecordField state original =
-    (state, original)
+    let
+        (state2, normalizedName) =
+            normalizeNodeString 
+                state 
+                (Tuple.first original)
+        
+        (state3, normalizedTypeAnnotation) = 
+            normalizeNodeTypeAnnotation
+                state2
+                (Tuple.second original)
+
+        recordField = (normalizedName, normalizedTypeAnnotation)        
+    in
+        ( state3, recordField )
 
 {-| Custom type for different type annotations. For example:
   - `Var`: `a`
