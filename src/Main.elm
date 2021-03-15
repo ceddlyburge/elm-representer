@@ -52,7 +52,7 @@ subscriptions _ =
 transform : InputType -> OutputType
 transform unNormalised =
     -- change this to normalizeElmCode probably
-    NormalizeElmFile.normalize unNormalised
+    NormalizeElmCode.normalize unNormalised
     |> writeResults
     
 writeResults: (Dict String String, String) -> String

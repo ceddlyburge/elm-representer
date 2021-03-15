@@ -23,6 +23,12 @@ import Dict as Dict exposing (Dict)
 import Elm.Writer exposing (writeFile)
 import Normalization 
 
+-- todo
+-- update variable names to 'state'
+-- copy tests from elm-syntax
+-- do a round trip at the end of this to make sure that the normalization
+-- code is working. This will catch the potential error when a returned
+-- Normalization.State is ignored instead of being passed in to normalize
 normalize : String -> (Dict String String, String)
 normalize unNormalised =
     case Elm.Parser.parse unNormalised of
@@ -83,6 +89,33 @@ normalizeDeclaration normalizer declaration =
             _ ->
                 (normalizer, declaration)
 
+-- normaliseDeclaration : IdentifierMapping ->  Declaration -> WithIdentifierMapping Declaration
+-- normaliseDeclaration identifierMapping decl =
+--         case decl of
+--             Declaration.FunctionDeclaration function ->
+--                 WithIdentifierMapping
+--                     identifierMapping
+--                     <| Declaration.FunctionDeclaration (normaliseFunctionDeclaration function)
+
+--             Declaration.CustomTypeDeclaration typeDeclaration ->
+--                 WithIdentifierMapping
+--                     identifierMapping
+--                     <| Declaration.CustomTypeDeclaration (normaliseTypeDeclaration typeDeclaration)
+
+--             Declaration.PortDeclaration p ->
+--                 WithIdentifierMapping
+--                     identifierMapping
+--                     <| Declaration.PortDeclaration p
+
+--             Declaration.InfixDeclaration inf ->
+--                 WithIdentifierMapping
+--                     identifierMapping
+--                     <| Declaration.InfixDeclaration inf
+            
+--             Declaration.Destructuring x y ->
+--                 WithIdentifierMapping
+--                     identifierMapping
+--                     <| Declaration.Destructuring x y
 
 normalizeTypeAlias : Normalization.State -> TypeAlias -> (Normalization.State, TypeAlias)
 normalizeTypeAlias normalizer original =
@@ -91,12 +124,32 @@ normalizeTypeAlias normalizer original =
             Node.map 
             (Normalization.normalize normalizer) 
             original.name
+        normalizedGenerics = 
+            List.foldl 
+                normalizeNodeStrings 
+                (Node.value normalizedName |> Tuple.first, []) 
+                original.generics
         typeAlias = 
             TypeAlias
                 original.documentation
                 (Node.map Tuple.second normalizedName)
-                original.generics
+                (Tuple.second normalizedGenerics)
                 original.typeAnnotation      
     in
-        ( Node.value normalizedName |> Tuple.first
+        ( Tuple.first normalizedGenerics
         , typeAlias)
+
+-- normalizeDeclarations : Node Declaration -> (Normalization.State, List (Node Declaration)) -> (Normalization.State, List (Node Declaration))
+-- normalizeDeclarations original (normalizer, normalizedDeclarations) =
+normalizeNodeStrings: Node String -> (Normalization.State, List (Node String)) -> (Normalization.State, List (Node String))
+normalizeNodeStrings original (state, normalizedNodeStrings) =
+    let
+        normalized = 
+            Node.map
+                (Normalization.normalize state)
+                original
+        nextState = Node.value normalized |> Tuple.first
+    in
+        ( nextState
+        , Node.map Tuple.second normalized :: normalizedNodeStrings
+        )
