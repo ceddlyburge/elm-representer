@@ -18,10 +18,11 @@ import Elm.Syntax.Infix exposing (Infix)
 import Elm.Syntax.Signature exposing (Signature)
 import Elm.Writer exposing (writeFile, write)
 import Elm.Processing exposing (init, process)
-import List
-import Dict as Dict exposing (Dict)
 import Elm.Writer exposing (writeFile)
 import Normalization 
+import List
+import Dict as Dict exposing (Dict)
+import Maybe as Maybe exposing (Maybe)
 
 -- todo
 -- update variable names to 'state'
@@ -76,18 +77,18 @@ normalizeDeclarations original (normalizer, normalizedDeclarations) =
 
 
 normalizeDeclaration : Normalization.State -> Declaration -> (Normalization.State, Declaration)
-normalizeDeclaration normalizer declaration =
-        case declaration of
-            Declaration.AliasDeclaration typeAlias ->
-                let
-                    normalizedTypeAlias = normalizeTypeAlias normalizer typeAlias
-                in
-                    ( Tuple.first normalizedTypeAlias
-                    , Declaration.AliasDeclaration (Tuple.second normalizedTypeAlias)
-                    )
+normalizeDeclaration state declaration =
+    case declaration of
+        Declaration.AliasDeclaration typeAlias ->
+            let
+                normalizedTypeAlias = normalizeTypeAlias state typeAlias
+            in
+                ( Tuple.first normalizedTypeAlias
+                , Declaration.AliasDeclaration (Tuple.second normalizedTypeAlias)
+                )
 
-            _ ->
-                (normalizer, declaration)
+        _ ->
+            (state, declaration)
 
 -- normaliseDeclaration : IdentifierMapping ->  Declaration -> WithIdentifierMapping Declaration
 -- normaliseDeclaration identifierMapping decl =
@@ -132,41 +133,94 @@ normalizeTypeAlias state original =
         
         typeAlias = 
             TypeAlias
-                original.documentation
+                Maybe.Nothing
                 normalizedName
                 normalizedGenerics
                 original.typeAnnotation      
     in
         ( state3, typeAlias )
 
-normalizeNodeString : Normalization.State -> Node String -> (Normalization.State, Node String)
-normalizeNodeString state nodeString =
+
+-- normalizeNodeTypeAnnotation : Normalization.State -> Node TypeAnnotation -> (Normalization.State, Node TypeAnnotation)
+-- normalizeNodeTypeAnnotation state nodeTypeAnnotation =
+
+
+normalizeTypeAnnotation : Normalization.State -> TypeAnnotation -> (Normalization.State, TypeAnnotation)
+normalizeTypeAnnotation state typeAnnotation =
+    case typeAnnotation of
+        -- Record nodeRecordFields ->
+        --     let
+        --         normalizedRecordFields = normalizeRecordFields state nodeRecordFields
+        --     in
+        --         ( Tuple.first normalizedTypeAlias
+        --         , TypeAnnotation.Record (Tuple.second normalizedTypeAlias)
+        --         )
+
+        _ ->
+            (state, typeAnnotation)
+
+{-| Custom type for different type annotations. For example:
+  - `Var`: `a`
+  - `Type`: `Maybe (Int -> String)`
+  - `Tuples`: `(a, b, c)` or Unit `()`
+  - `Record`: `{ name : String }`
+  - `ExtensionRecord`: `{ a | name : String }`
+  - `GenericRecord`: `{ a | name : String}`
+  - `FunctionTypeAnnotation`: `Int -> String`
+-}
+-- type TypeAnnotation
+--     = Var String
+--     | Type (Node ( ModuleName, String )) (List (Node TypeAnnotation))
+--     | Tuple (List (Node TypeAnnotation))
+--     | Record (List (Node RecordField))
+--     | ExtensionRecord (Node String) (Node RecordField) (List (Node RecordField))
+--     | FunctionTypeAnnotation (Node TypeAnnotation) (Node TypeAnnotation)
+
+
+normalizeNode : 
+    Normalization.State 
+    -> Node a 
+    -> (Normalization.State -> a -> (Normalization.State, a)) 
+    -> (Normalization.State, Node a)
+normalizeNode state original normalizer =
     let
-        normalizedNodeString =
+        normalized =
             Node.map 
-            (Normalization.normalize state) 
-            nodeString
-        
+                (normalizer state) 
+                original
     in
-        ( Node.value normalizedNodeString |> Tuple.first
-        , Node.map Tuple.second normalizedNodeString)
+        ( Node.value normalized |> Tuple.first
+        , Node.map Tuple.second normalized)
+
+normalizeNodeString : Normalization.State -> Node String -> (Normalization.State, Node String)
+normalizeNodeString state original =
+    normalizeNode state original Normalization.normalize
 
 normalizeNodeStrings : Normalization.State -> List (Node String) -> (Normalization.State, List (Node String))
 normalizeNodeStrings state original =
+    normalizeNodes normalizeNodeString state original
+
+
+normalizeNodes : 
+    (Normalization.State -> Node a -> (Normalization.State, Node a)) 
+    -> Normalization.State 
+    -> List (Node a) 
+    -> (Normalization.State, List (Node a))
+normalizeNodes normalizer state original =
     List.foldl 
-        normalizeAccumulateNodeString 
+        (normalizeAccumulateNode normalizer) 
         (state, []) 
         original
 
-normalizeAccumulateNodeString : Node String -> (Normalization.State, List (Node String)) -> (Normalization.State, List (Node String))
-normalizeAccumulateNodeString original (state, normalizedNodeStrings) =
+normalizeAccumulateNode : 
+    (Normalization.State -> Node a -> (Normalization.State, Node a)) 
+    -> Node a 
+    -> (Normalization.State, List (Node a)) 
+    -> (Normalization.State, List (Node a))
+normalizeAccumulateNode normalizer original (state, normalizedNodes) =
     let
-        normalized = 
-            Node.map
-                (Normalization.normalize state)
-                original
-        nextState = Node.value normalized |> Tuple.first
+        (nextState, normalized) = normalizer state original
     in
         ( nextState
-        , Node.map Tuple.second normalized :: normalizedNodeStrings
+        , normalized :: normalizedNodes
         )
