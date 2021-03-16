@@ -17,9 +17,6 @@ type alias Selectable a =
 -- function
 type alias Transform = (String -> String)
 
--- tuple
-type alias Step = (Int, Int)
-
 suite : Test
 suite =
     describe "Normalize"
@@ -44,13 +41,9 @@ suite =
         
         , test "shoud normalize parameter types of Tuple Type Alias'" <|
             \_ ->
-                givenElmCodeOf """
-type alias Name = String
-
-type alias InputType = (Name, Name)
-"""
+                givenElmCodeOf "type alias InputType = (Name, Name)"
                 |> whenNormalize                
-                |> thenContains "type alias IDENTIFIER_2  =\n    (IDENTIFIER_1, IDENTIFIER_1)"
+                |> thenContains "type alias IDENTIFIER_1  =\n    (IDENTIFIER_2, IDENTIFIER_2)"
 
         , test "shoud normalize Name and generic type parametsr of Custom Type - Type Alias'" <|
             \_ ->
