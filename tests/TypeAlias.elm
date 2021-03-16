@@ -8,13 +8,6 @@ import Dict exposing (Dict)
 
 import NormalizeElmCode
 
--- extensible record
--- type alias Selectable a =
---     { a
---         | isSelected : Bool
---     }
--- and function type alias
-
 suite : Test
 suite =
     describe "Normalize"
@@ -31,11 +24,11 @@ suite =
                 |> whenNormalize                
                 |> thenContains "type alias IDENTIFIER_1  =\n    IDENTIFIER_2"
         
-        , skip <| test "shoud normalize Name and generic type parameters of Custom Type - Type Alias'" <|
+        , test "shoud normalize Name and generic type parameters of Custom Type - Type Alias'" <|
             \_ ->
-                givenElmCodeOf "type alias InputType a b = Result a b"
+                givenElmCodeOf "type alias InputType a = Result a"
                 |> whenNormalize                
-                |> thenContains "type alias IDENTIFIER_1 IDENTIFIER_2 =\n    Result IDENTIFIER_1 IDENTIFIER_2"
+                |> thenContains "type alias IDENTIFIER_1 IDENTIFIER_2 =\n    IDENTIFIER_3 IDENTIFIER_2"
         
         , test "shoud normalize name of Tuple Type Alias'" <|
             \_ ->

@@ -196,6 +196,14 @@ normalizeTypeAnnotation state typeAnnotation =
                 , TypeAnnotation.FunctionTypeAnnotation normalizedParameters normalizedReturn
                 )
 
+        TypeAnnotation.GenericType original ->
+            let
+                (state2, normalized) = normalizeString state original
+            in
+                ( state2
+                , TypeAnnotation.GenericType normalized
+                )
+
         _ ->
             (state, typeAnnotation)
 
