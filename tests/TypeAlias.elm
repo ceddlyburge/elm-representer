@@ -14,8 +14,6 @@ type alias Selectable a =
         | isSelected : Bool
     }
 
--- function
-type alias Transform = (String -> String)
 
 suite : Test
 suite =
@@ -26,6 +24,12 @@ suite =
                 givenElmCodeOf "type alias Name = String"
                 |> whenNormalize                
                 |> thenContains "type alias IDENTIFIER_1  =\n    String"
+        
+        , test "shoud normalize Name and Type of Custom Type - Type Alias'" <|
+            \_ ->
+                givenElmCodeOf "type alias FirstName = Name"
+                |> whenNormalize                
+                |> thenContains "type alias IDENTIFIER_1  =\n    IDENTIFIER_2"
         
         , skip <| test "shoud normalize Name and generic type parameters of Custom Type - Type Alias'" <|
             \_ ->
