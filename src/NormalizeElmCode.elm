@@ -172,14 +172,34 @@ normalizeTypeAnnotation state typeAnnotation =
         TypeAnnotation.Typed originalName originalTypes ->
             let
                 (state2, normalizedName) = normalizeNodeTypeName state originalName
-                (state3, normalizedTypes) = normalizeNodes normalizeNodeTypeAnnotation state originalTypes
+                (state3, normalizedTypes) = normalizeNodes normalizeNodeTypeAnnotation state2 originalTypes
             in
                 ( state3
                 , TypeAnnotation.Typed normalizedName normalizedTypes
                 )
+        
+        TypeAnnotation.GenericRecord originalName originalRecordDefinition ->
+            let
+                (state2, normalizedName) = normalizeNodeString state originalName
+                (state3, normalizedRecordDefinition) = normalizeNodeRecordDefinition state2 originalRecordDefinition
+            in
+                ( state3
+                , TypeAnnotation.GenericRecord normalizedName normalizedRecordDefinition
+                )
 
         _ ->
             (state, typeAnnotation)
+
+normalizeNodeRecordDefinition: Normalization.State -> Node TypeAnnotation.RecordDefinition -> (Normalization.State, Node TypeAnnotation.RecordDefinition)
+normalizeNodeRecordDefinition state original =
+    normalizeNode normalizeRecordDefinition state original
+
+--type alias RecordDefinition =
+--    List (Node RecordField)
+normalizeRecordDefinition : Normalization.State -> TypeAnnotation.RecordDefinition -> (Normalization.State, TypeAnnotation.RecordDefinition)
+normalizeRecordDefinition state original =
+    normalizeNodeRecordFields state original
+
 
 normalizeNodeRecordField: Normalization.State -> Node TypeAnnotation.RecordField -> (Normalization.State, Node TypeAnnotation.RecordField)
 normalizeNodeRecordField state original =

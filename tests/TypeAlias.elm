@@ -2,18 +2,18 @@ module TypeAlias exposing (suite)
 
 import Expect exposing (Expectation)
 import Expect.Extra
-import Fuzz exposing (Fuzzer, int, list, string)
+--import Fuzz exposing (Fuzzer, int, list, string)
 import Test exposing (..)
-import Dict as Dict exposing (Dict)
+import Dict exposing (Dict)
 
 import NormalizeElmCode
 
 -- extensible record
-type alias Selectable a =
-    { a
-        | isSelected : Bool
-    }
-
+-- type alias Selectable a =
+--     { a
+--         | isSelected : Bool
+--     }
+-- and function type alias
 
 suite : Test
 suite =
@@ -49,27 +49,37 @@ suite =
                 |> whenNormalize                
                 |> thenContains "type alias IDENTIFIER_1  =\n    (IDENTIFIER_2, IDENTIFIER_2)"
 
-        , test "shoud normalize Name and generic type parametsr of Custom Type - Type Alias'" <|
+        , test "shoud normalize Name and Parameters of Record Types" <|
             \_ ->
                 givenElmCodeOf """
 type alias Person = 
-    { name : String
+    { name : Name
     , age : Int
     }
 """
                 |> whenNormalize                
                 |> thenContains """type alias IDENTIFIER_1  =
-    {IDENTIFIER_2 : String, IDENTIFIER_3 : Int}"""
+    {IDENTIFIER_2 : IDENTIFIER_3, IDENTIFIER_4 : Int}"""
+
+        , test "shoud normalize Name and Parameters of Extensible Record Types" <|
+            \_ ->
+                givenElmCodeOf """
+type alias Person a = 
+    { a |
+    name : String
+    }
+"""
+                |> whenNormalize                
+                |> thenContains """type alias IDENTIFIER_1 IDENTIFIER_2 =
+    { IDENTIFIER_2 | IDENTIFIER_3 : String }"""
+
     ]
 
 
-boilerPlate = 
-    """module BoilerPlate exposing (..)
-
-"""
 givenElmCodeOf: String -> String
 givenElmCodeOf elmCode = 
-    boilerPlate ++ elmCode
+    boilerplate ++ elmCode
+
 whenNormalize : String -> (Dict String String, String)
 whenNormalize =
     NormalizeElmCode.normalize
@@ -78,10 +88,15 @@ thenContains : String -> (Dict String String, String) -> Expectation
 thenContains expected normalizationResult =
     let
         normalizedCode = Tuple.second normalizationResult
-        normalizedCodeWithoutBoilerplate = String.replace boilerPlate "" normalizedCode
+        normalizedCodeWithoutBoilerplate = String.replace boilerplate "" normalizedCode
     in 
         Expect.Extra.match (Expect.Extra.stringPattern expected) normalizedCodeWithoutBoilerplate
         --String.contains expected normalizedCode
         --|> Expect.true 
         --("Elm Code should contain \n" ++ expected ++ "\nbut is \n" ++ normalizedCodeWithoutBoilerplate ++ "\n")
 
+boilerplate : String
+boilerplate = 
+    """module Boilerplate exposing (..)
+
+"""
