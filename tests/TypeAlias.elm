@@ -49,6 +49,12 @@ suite =
                 |> whenNormalize                
                 |> thenContains "type alias IDENTIFIER_1  =\n    (IDENTIFIER_2, IDENTIFIER_2)"
 
+        , test "shoud normalize types of Function Type Alias'" <|
+            \_ ->
+                givenElmCodeOf "type alias InputType = Name -> Name"
+                |> whenNormalize                
+                |> thenContains "type alias IDENTIFIER_1  =\n    IDENTIFIER_2 -> IDENTIFIER_2"
+
         , test "shoud normalize Name and Parameters of Record Types" <|
             \_ ->
                 givenElmCodeOf """

@@ -28,8 +28,8 @@ import Maybe as Maybe
 -- todo
 -- add pull request to elm-syntax repo about the process init thing which is hard to work out
 
--- check for pre existing items in the identifer mapping
--- add tests for type alias
+-- convention
+-- only use 'normalizeNodes' from other lower level stuff, create and use higher level things elsewhere
 
 -- convention variable names to 
 --  'state'
@@ -172,7 +172,7 @@ normalizeTypeAnnotation state typeAnnotation =
         TypeAnnotation.Typed originalName originalTypes ->
             let
                 (state2, normalizedName) = normalizeNodeTypeName state originalName
-                (state3, normalizedTypes) = normalizeNodes normalizeNodeTypeAnnotation state2 originalTypes
+                (state3, normalizedTypes) = normalizeNodeTypeAnnotations state2 originalTypes
             in
                 ( state3
                 , TypeAnnotation.Typed normalizedName normalizedTypes
@@ -187,6 +187,15 @@ normalizeTypeAnnotation state typeAnnotation =
                 , TypeAnnotation.GenericRecord normalizedName normalizedRecordDefinition
                 )
 
+        TypeAnnotation.FunctionTypeAnnotation originalParameters originalReturn ->
+            let
+                (state2, normalizedParameters) = normalizeNodeTypeAnnotation state originalParameters
+                (state3, normalizedReturn) = normalizeNodeTypeAnnotation state2 originalReturn
+            in
+                ( state3
+                , TypeAnnotation.FunctionTypeAnnotation normalizedParameters normalizedReturn
+                )
+
         _ ->
             (state, typeAnnotation)
 
@@ -194,8 +203,7 @@ normalizeNodeRecordDefinition: Normalization.State -> Node TypeAnnotation.Record
 normalizeNodeRecordDefinition state original =
     normalizeNode normalizeRecordDefinition state original
 
---type alias RecordDefinition =
---    List (Node RecordField)
+
 normalizeRecordDefinition : Normalization.State -> TypeAnnotation.RecordDefinition -> (Normalization.State, TypeAnnotation.RecordDefinition)
 normalizeRecordDefinition state original =
     normalizeNodeRecordFields state original
