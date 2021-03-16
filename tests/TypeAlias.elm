@@ -8,14 +8,6 @@ import Dict as Dict exposing (Dict)
 
 import NormalizeElmCode
 
---normalize : String -> (Dict String String, String)
-
--- primitive type
-type alias Name = String
-
--- generic custom type
-type alias InputType a b = Result a b
-
 -- extensible record
 type alias Selectable a =
     { a
@@ -28,13 +20,6 @@ type alias Transform = (String -> String)
 -- tuple
 type alias Step = (Int, Int)
 
--- record
-type alias Person =
-    { name : String
-    , age : Int
-    }
-
-
 suite : Test
 suite =
     describe "Normalize"
@@ -44,11 +29,29 @@ suite =
                 givenElmCodeOf "type alias Name = String"
                 |> whenNormalize                
                 |> thenContains "type alias IDENTIFIER_1  =\n    String"
+        
         , skip <| test "shoud normalize Name and generic type parameters of Custom Type - Type Alias'" <|
             \_ ->
                 givenElmCodeOf "type alias InputType a b = Result a b"
                 |> whenNormalize                
                 |> thenContains "type alias IDENTIFIER_1 IDENTIFIER_2 =\n    Result IDENTIFIER_1 IDENTIFIER_2"
+        
+        , test "shoud normalize name of Tuple Type Alias'" <|
+            \_ ->
+                givenElmCodeOf "type alias InputType = (String, Int)"
+                |> whenNormalize                
+                |> thenContains "type alias IDENTIFIER_1  =\n    (String, Int)"
+        
+        , test "shoud normalize parameter types of Tuple Type Alias'" <|
+            \_ ->
+                givenElmCodeOf """
+type alias Name = String
+
+type alias InputType = (Name, Name)
+"""
+                |> whenNormalize                
+                |> thenContains "type alias IDENTIFIER_2  =\n    (IDENTIFIER_1, IDENTIFIER_1)"
+
         , test "shoud normalize Name and generic type parametsr of Custom Type - Type Alias'" <|
             \_ ->
                 givenElmCodeOf """

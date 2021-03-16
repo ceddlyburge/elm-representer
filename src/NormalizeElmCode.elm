@@ -16,6 +16,7 @@ import Elm.Syntax.Expression exposing (Expression, Function)
 import Elm.Syntax.Type exposing (Type)
 import Elm.Syntax.Infix exposing (Infix)
 import Elm.Syntax.Signature exposing (Signature)
+import Elm.Syntax.ModuleName as ModuleName exposing (ModuleName)
 import Elm.Writer exposing (writeFile, write)
 import Elm.Processing exposing (init, process)
 import Elm.Writer exposing (writeFile)
@@ -145,28 +146,49 @@ normalizeNodeTypeAnnotation : Normalization.State -> Node TypeAnnotation -> (Nor
 normalizeNodeTypeAnnotation state original =
     normalizeNode normalizeTypeAnnotation state original
 
+normalizeNodeTypeAnnotations : Normalization.State -> List (Node TypeAnnotation) -> (Normalization.State, List (Node TypeAnnotation))
+normalizeNodeTypeAnnotations state original =
+    normalizeNodes normalizeNodeTypeAnnotation state original
+
 normalizeTypeAnnotation : Normalization.State -> TypeAnnotation -> (Normalization.State, TypeAnnotation)
 normalizeTypeAnnotation state typeAnnotation =
     case typeAnnotation of
         TypeAnnotation.Record original ->
             let
-                normalized = normalizeNodes normalizeNodeRecordField state original
+                normalized = normalizeNodeRecordFields state original
             in
                 ( Tuple.first normalized
                 , TypeAnnotation.Record (Tuple.second normalized)
+                )
+        
+        TypeAnnotation.Tupled original ->
+            let
+                normalized = normalizeNodeTypeAnnotations state original
+            in
+                ( Tuple.first normalized
+                , TypeAnnotation.Tupled (Tuple.second normalized)
+                )
+
+        TypeAnnotation.Typed originalName originalTypes ->
+            let
+                (state2, normalizedName) = normalizeNodeTypeName state originalName
+                (state3, normalizedTypes) = normalizeNodes normalizeNodeTypeAnnotation state originalTypes
+            in
+                ( state3
+                , TypeAnnotation.Typed normalizedName normalizedTypes
                 )
 
         _ ->
             (state, typeAnnotation)
 
-normalizeNodeRecordField : Normalization.State -> Node TypeAnnotation.RecordField -> (Normalization.State, Node TypeAnnotation.RecordField)
+normalizeNodeRecordField: Normalization.State -> Node TypeAnnotation.RecordField -> (Normalization.State, Node TypeAnnotation.RecordField)
 normalizeNodeRecordField state original =
     normalizeNode normalizeRecordField state original
 
-{-| Single field of a record. A name and its type.
--}
--- type alias RecordField =
---     ( Node String, Node TypeAnnotation )
+normalizeNodeRecordFields: Normalization.State -> List (Node TypeAnnotation.RecordField) -> (Normalization.State, List (Node TypeAnnotation.RecordField))
+normalizeNodeRecordFields state original =
+    normalizeNodes normalizeNodeRecordField state original
+
 normalizeRecordField : Normalization.State -> TypeAnnotation.RecordField -> (Normalization.State, TypeAnnotation.RecordField)
 normalizeRecordField state original =
     let
@@ -183,6 +205,24 @@ normalizeRecordField state original =
         recordField = (normalizedName, normalizedTypeAnnotation)        
     in
         ( state3, recordField )
+
+
+normalizeNodeTypeName : Normalization.State -> Node ( ModuleName, String ) -> (Normalization.State, Node ( ModuleName, String ))
+normalizeNodeTypeName state original =
+    normalizeNode normalizeTypeName state original
+
+normalizeTypeName : Normalization.State -> ( ModuleName, String ) -> (Normalization.State, ( ModuleName, String ))
+normalizeTypeName state (originalModuleName, originalTypeName) =
+    let
+        (state2, normalizedTypeName) =
+            normalizeString 
+                state 
+                originalTypeName
+
+        typeName = (originalModuleName, normalizedTypeName)        
+    in
+        ( state2, typeName )
+
 
 {-| Custom type for different type annotations. For example:
   - `Var`: `a`
@@ -204,7 +244,11 @@ normalizeRecordField state original =
 
 normalizeNodeString : Normalization.State -> Node String -> (Normalization.State, Node String)
 normalizeNodeString state original =
-    normalizeNode  Normalization.normalize state original
+    normalizeNode normalizeString state original
+
+normalizeString : Normalization.State -> String -> (Normalization.State, String)
+normalizeString =
+    Normalization.normalize
 
 normalizeNodeStrings : Normalization.State -> List (Node String) -> (Normalization.State, List (Node String))
 normalizeNodeStrings state original =
