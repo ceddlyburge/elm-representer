@@ -22,15 +22,17 @@ import Elm.Writer exposing (writeFile)
 import Normalization 
 import List
 import Dict as Dict exposing (Dict)
-import Maybe as Maybe exposing (Maybe)
+import Maybe as Maybe
 
 -- todo
+-- add pull request to elm-syntax repo about the process init thing which is hard to work out
+
+-- check for pre existing items in the identifer mapping
+-- add tests for type alias
 
 -- convention variable names to 
 --  'state'
 --  'original'
-
--- add tests for type alias
 
 -- do a round trip at the end of this to make sure that the normalization
 -- code is working. This will catch the potential error when a returned
@@ -188,7 +190,6 @@ normalizeRecordField state original =
   - `Tuples`: `(a, b, c)` or Unit `()`
   - `Record`: `{ name : String }`
   - `ExtensionRecord`: `{ a | name : String }`
-  - `GenericRecord`: `{ a | name : String}`
   - `FunctionTypeAnnotation`: `Int -> String`
 -}
 -- type TypeAnnotation
@@ -230,7 +231,7 @@ normalizeNodes :
     -> List (Node a) 
     -> (Normalization.State, List (Node a))
 normalizeNodes normalizer state original =
-    List.foldl 
+    List.foldl
         (normalizeAccumulateNode normalizer) 
         (state, []) 
         original
@@ -245,5 +246,5 @@ normalizeAccumulateNode normalizer original (state, normalizedNodes) =
         (nextState, normalized) = normalizer state original
     in
         ( nextState
-        , normalized :: normalizedNodes
+        , normalizedNodes ++ [normalized]
         )
