@@ -12,11 +12,17 @@ suite =
                 givenElmCodeOf "add x y =\n    x + y"
                 |> whenNormalize                
                 |> thenContains "IDENTIFIER_1 IDENTIFIER_2 IDENTIFIER_3 =\nIDENTIFIER_2 + IDENTIFIER_3"
+
+    -- test functionorvalue
         
-    -- , test "shoud normalize generic type parameters of Custom Types" <|
-    --         \_ ->
-    --             givenElmCodeOf "type InputType a = InputType a String"
-    --             |> whenNormalize                
-    --             |> thenContains "type IDENTIFIER_1 IDENTIFIER_2\n=IDENTIFIER_1 IDENTIFIER_2 String"
+    , test "shoud normalize if expressions " <|
+            \_ ->
+                givenElmCodeOf "max x y =\n    if x > y then x else y"
+                |> whenNormalize                
+                |> thenContains """IDENTIFIER_1 IDENTIFIER_2 IDENTIFIER_3 =
+if IDENTIFIER_2 > IDENTIFIER_3 then
+IDENTIFIER_2
+else
+IDENTIFIER_3"""
 
     ]
