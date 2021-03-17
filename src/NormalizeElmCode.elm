@@ -12,10 +12,10 @@ import Elm.Syntax.Comments exposing (Comment)
 import Elm.Syntax.Documentation exposing (Documentation)
 import Elm.Syntax.Node as Node exposing (Node)
 import Elm.Syntax.TypeAnnotation as TypeAnnotation exposing (TypeAnnotation)
-import Elm.Syntax.Expression exposing (Expression, Function)
+import Elm.Syntax.Expression exposing (Expression(..), Function, FunctionImplementation)
 import Elm.Syntax.Type exposing (Type, ValueConstructor)
 import Elm.Syntax.Infix exposing (Infix)
-import Elm.Syntax.Signature exposing (Signature)
+import Elm.Syntax.Signature exposing (Signature)    
 import Elm.Syntax.ModuleName as ModuleName exposing (ModuleName)
 import Elm.Writer exposing (writeFile, write)
 import Elm.Processing exposing (init, process)
@@ -97,33 +97,326 @@ normalizeDeclaration state declaration =
                 ( Tuple.first normalizedType
                 , Declaration.CustomTypeDeclaration (Tuple.second normalizedType)
                 )
-            
+
+        Declaration.FunctionDeclaration function ->
+            let
+                normalizedFunction = normalizeFunction state function
+            in
+                ( Tuple.first normalizedFunction
+                , Declaration.FunctionDeclaration (Tuple.second normalizedFunction)
+                )
+        -- I don't think we need to worry about port declarations and infixes (which are for core packages only)
+        -- but we can revisit later if needs be 
         _ ->
             (state, declaration)
 
 -- normaliseDeclaration : IdentifierMapping ->  Declaration -> WithIdentifierMapping Declaration
 -- normaliseDeclaration identifierMapping decl =
 --         case decl of
---             Declaration.FunctionDeclaration function ->
---                 WithIdentifierMapping
---                     identifierMapping
---                     <| Declaration.FunctionDeclaration (normaliseFunctionDeclaration function)
-
-
---             Declaration.PortDeclaration p ->
---                 WithIdentifierMapping
---                     identifierMapping
---                     <| Declaration.PortDeclaration p
-
---             Declaration.InfixDeclaration inf ->
---                 WithIdentifierMapping
---                     identifierMapping
---                     <| Declaration.InfixDeclaration inf
             
 --             Declaration.Destructuring x y ->
 --                 WithIdentifierMapping
 --                     identifierMapping
 --                     <| Declaration.Destructuring x y
+
+normalizeFunction : Normalization.State -> Function -> (Normalization.State, Function)
+normalizeFunction state original =
+    let
+        (state2, normalizedFunctionImplementation) =
+            normalizeNodeFunctionImplementation 
+                state 
+                original.declaration
+        
+        normalizedFunction = 
+            Function
+                Maybe.Nothing
+                Maybe.Nothing -- should maybe do the function signature, its not a required thing, but is something that a mentor might comment on, so probably wants to normalize differently 
+                normalizedFunctionImplementation
+    in
+        ( state2, normalizedFunction )
+
+normalizeNodeFunctionImplementation : Normalization.State -> Node FunctionImplementation -> (Normalization.State, Node FunctionImplementation)
+normalizeNodeFunctionImplementation state original =
+    normalizeNode normalizeFunctionImplementation state original
+
+normalizeFunctionImplementation : Normalization.State -> FunctionImplementation -> (Normalization.State, FunctionImplementation)
+normalizeFunctionImplementation state original =
+    let
+        (state2, normalizedName) =
+            normalizeNodeString 
+                state 
+                original.name
+        
+        (state3, normalizedArguments) =
+            normalizeNodePatterns 
+                state2 
+                original.arguments
+        
+        (state4, normalizedExpression) =
+            normalizeNodeExpression 
+                state3
+                original.expression
+                
+        normalizedFunctionImplementation = 
+            FunctionImplementation
+                normalizedName
+                normalizedArguments
+                normalizedExpression
+    in
+        ( state4, normalizedFunctionImplementation )
+
+normalizeNodeExpression : Normalization.State -> Node Expression -> (Normalization.State, Node Expression)
+normalizeNodeExpression state original =
+    normalizeNode normalizeExpression state original
+
+normalizeNodeExpressions : Normalization.State -> List (Node Expression) -> (Normalization.State, List (Node Expression))
+normalizeNodeExpressions state original =
+    normalizeNodes normalizeNodeExpression state original
+
+normalizeExpression : Normalization.State -> Expression -> (Normalization.State, Expression)
+normalizeExpression state originalExpression =
+    case originalExpression of
+        UnitExpr ->
+            (state, UnitExpr)
+
+        Application original ->
+            let
+                normalized = normalizeNodeExpressions state original
+            in
+                ( Tuple.first normalized
+                , Application (Tuple.second normalized)
+                )
+
+        OperatorApplication op dir left right ->
+            let
+                (state2, normalizedLeft) = normalizeNodeExpression state left
+                (state3, normalizedRight) = normalizeNodeExpression state2 right
+                normalized = 
+                    OperatorApplication
+                        op
+                        dir
+                        normalizedLeft
+                        normalizedRight
+
+            in
+                ( state3
+                , normalized
+                )
+
+        FunctionOrValue originalModuleName originalName ->
+            let
+                normalized = normalizeString state originalName
+            in
+                ( Tuple.first normalized
+                , FunctionOrValue originalModuleName (Tuple.second normalized)
+                )
+
+        IfBlock c t e ->
+            let
+                (state2, normalizedCondition) = normalizeNodeExpression state c
+                (state3, normalizedThen) = normalizeNodeExpression state2 t
+                (state4, normalizedElse) = normalizeNodeExpression state3 e
+                normalized = 
+                    IfBlock
+                        normalizedCondition
+                        normalizedThen
+                        normalizedElse
+
+            in
+                ( state4
+                , normalized
+                )
+
+        PrefixOperator original ->
+            (state, PrefixOperator original)
+
+        Operator original ->
+            (state, Operator original)
+
+        Hex original ->
+            (state, Hex original)
+
+        Integer original ->
+            (state, Integer original)
+
+        Floatable original ->
+            (state, Floatable original)
+
+        Negation original ->
+            (state, Negation original)
+
+        Literal original ->
+            (state, Literal original)
+
+        CharLiteral original ->
+            (state, CharLiteral original)
+
+        TupledExpression original ->
+            let
+                normalized = normalizeNodeExpressions state original
+            in
+                ( Tuple.first normalized
+                , TupledExpression (Tuple.second normalized)
+                )
+
+        ListExpr original ->
+            let
+                normalized = normalizeNodeExpressions state original
+            in
+                ( Tuple.first normalized
+                , ListExpr (Tuple.second normalized)
+                )
+
+        ParenthesizedExpression original ->
+            let
+                normalized = normalizeNodeExpression state original
+            in
+                ( Tuple.first normalized
+                , ParenthesizedExpression (Tuple.second normalized)
+                )
+
+        LetExpression original ->
+            (state, LetExpression original) -- todo
+
+        CaseExpression original ->
+            (state, CaseExpression original) -- todo
+
+        LambdaExpression original ->
+            (state, LambdaExpression original) -- todo
+
+        RecordAccess exp name ->
+            let
+                (state2, normalizedExpression) = normalizeNodeExpression state exp
+                (state3, normalizedName) = normalizeNodeString state2 name
+                normalized = 
+                    RecordAccess
+                        normalizedExpression
+                        normalizedName
+            in
+                ( state3
+                , normalized
+                )
+
+        -- I think this is '.name' type stuff, so probably need to strip the dot before normalizing
+        RecordAccessFunction original ->
+            (state, RecordAccessFunction original) -- todo
+
+        RecordExpr original ->
+            (state, RecordExpr original) -- todo
+
+        RecordUpdateExpression name updates -> -- todo
+            (state, 
+                RecordUpdateExpression 
+                    name
+                    updates 
+            )
+
+        GLSLExpression original ->
+            (state, GLSLExpression original)
+
+
+normalizeNodePattern : Normalization.State -> Node Pattern -> (Normalization.State, Node Pattern)
+normalizeNodePattern state original =
+    normalizeNode normalizePattern state original
+
+normalizeNodePatterns : Normalization.State -> List (Node Pattern) -> (Normalization.State, List (Node Pattern))
+normalizeNodePatterns state original =
+    normalizeNodes normalizeNodePattern state original
+
+normalizePattern : Normalization.State -> Pattern -> (Normalization.State, Pattern)
+normalizePattern state originalPattern =
+    case originalPattern of
+        AllPattern ->
+            (state, AllPattern)
+
+        UnitPattern ->
+            (state, UnitPattern)
+
+        CharPattern original ->
+            (state, CharPattern original)
+
+        StringPattern original ->
+            (state, StringPattern original)
+
+        HexPattern original ->
+            (state, HexPattern original)
+
+        IntPattern original ->
+            (state, IntPattern original)
+
+        FloatPattern original ->
+            (state, FloatPattern original)
+
+        TuplePattern original ->
+            let
+                normalized = normalizeNodePatterns state original
+            in
+                ( Tuple.first normalized
+                , TuplePattern (Tuple.second normalized)
+                )
+
+        RecordPattern original ->
+            let
+                normalized = normalizeNodeStrings state original
+            in
+                ( Tuple.first normalized
+                , RecordPattern (Tuple.second normalized)
+                )
+
+        UnConsPattern original1 original2 ->
+            let
+                (state2, normalized1) = normalizeNodePattern state original1
+                (state3, normalized2) = normalizeNodePattern state2 original2
+
+            in
+                ( state3
+                , UnConsPattern normalized1 normalized2
+                )
+
+        ListPattern original ->
+            let
+                normalized = normalizeNodePatterns state original
+            in
+                ( Tuple.first normalized
+                , ListPattern (Tuple.second normalized)
+                )
+
+        VarPattern original ->
+            let
+                normalized = normalizeString state original
+            in
+                ( Tuple.first normalized
+                , VarPattern (Tuple.second normalized)
+                )
+
+        NamedPattern qualifiedNameRef patterns ->
+            let
+                -- should probably do the qualifiedNameRef as well
+                --(state2, normalized1) = normalizeNodePattern state qualifiedNameRef
+                (state2, normalized2) = normalizeNodePatterns state patterns
+
+            in
+                ( state2
+                , NamedPattern qualifiedNameRef normalized2
+                )
+
+        AsPattern pattern name ->
+            let
+                (state2, normalizedPattern) = normalizeNodePattern state pattern
+                (state3, normalizedName) = normalizeNodeString state2 name
+
+            in
+                ( state3
+                , AsPattern normalizedPattern normalizedName
+                )
+
+        ParenthesizedPattern original ->
+            let
+                normalized = normalizeNodePattern state original
+            in
+                ( Tuple.first normalized
+                , ParenthesizedPattern (Tuple.second normalized)
+                )
 
 normalizeType : Normalization.State -> Type -> (Normalization.State, Type)
 normalizeType state original =
