@@ -13,7 +13,7 @@ import Elm.Syntax.Documentation exposing (Documentation)
 import Elm.Syntax.Node as Node exposing (Node)
 import Elm.Syntax.TypeAnnotation as TypeAnnotation exposing (TypeAnnotation)
 import Elm.Syntax.Expression exposing (Expression, Function)
-import Elm.Syntax.Type exposing (Type)
+import Elm.Syntax.Type exposing (Type, ValueConstructor)
 import Elm.Syntax.Infix exposing (Infix)
 import Elm.Syntax.Signature exposing (Signature)
 import Elm.Syntax.ModuleName as ModuleName exposing (ModuleName)
@@ -26,7 +26,14 @@ import Dict as Dict exposing (Dict)
 import Maybe as Maybe
 
 -- todo
+-- work my way through the other Declaration cases (adding tests)
+-- CustomTypeDeclaration probably next, and probably fairly easy
 -- add pull request to elm-syntax repo about the process init thing which is hard to work out
+
+-- special case all primitive types, not just String and Int, so they aren't normalized
+-- special case core types such as Maybe and Result and so on
+-- don't normalize anything outside of the file being looked at? could cause issues with multi file exercism submissions
+-- normalize within scope (so 'a' can normalize to different values if it is defined in different scopes). This would improve the normalization, but the mapping format defined by exercism doesn't support it, so there probably isn't much point, and it would be harder to do
 
 -- convention
 -- only use 'normalizeNodes' from other lower level stuff, create and use higher level things elsewhere
@@ -83,6 +90,14 @@ normalizeDeclaration state declaration =
                 , Declaration.AliasDeclaration (Tuple.second normalizedTypeAlias)
                 )
 
+        Declaration.CustomTypeDeclaration theType ->
+            let
+                normalizedType = normalizeType state theType
+            in
+                ( Tuple.first normalizedType
+                , Declaration.CustomTypeDeclaration (Tuple.second normalizedType)
+                )
+            
         _ ->
             (state, declaration)
 
@@ -94,10 +109,6 @@ normalizeDeclaration state declaration =
 --                     identifierMapping
 --                     <| Declaration.FunctionDeclaration (normaliseFunctionDeclaration function)
 
---             Declaration.CustomTypeDeclaration typeDeclaration ->
---                 WithIdentifierMapping
---                     identifierMapping
---                     <| Declaration.CustomTypeDeclaration (normaliseTypeDeclaration typeDeclaration)
 
 --             Declaration.PortDeclaration p ->
 --                 WithIdentifierMapping
@@ -113,6 +124,55 @@ normalizeDeclaration state declaration =
 --                 WithIdentifierMapping
 --                     identifierMapping
 --                     <| Declaration.Destructuring x y
+
+normalizeType : Normalization.State -> Type -> (Normalization.State, Type)
+normalizeType state original =
+    let
+        (state2, normalizedName) =
+            normalizeNodeString 
+                state 
+                original.name
+        
+        (state3, normalizedGenerics) = 
+            normalizeNodeStrings 
+                state2
+                original.generics
+        
+        (state4, normalizedValueConstructors) = 
+            normalizeNodeValueConstructors 
+                state3
+                original.constructors
+        
+        normalizedType = 
+            Type
+                Maybe.Nothing
+                normalizedName
+                normalizedGenerics
+                normalizedValueConstructors      
+    in
+        ( state4, normalizedType )
+
+normalizeNodeValueConstructor : Normalization.State -> Node ValueConstructor -> (Normalization.State, Node ValueConstructor)
+normalizeNodeValueConstructor state original =
+    normalizeNode normalizeValueConstructor state original
+
+normalizeNodeValueConstructors : Normalization.State -> List (Node ValueConstructor) -> (Normalization.State, List (Node ValueConstructor))
+normalizeNodeValueConstructors state original =
+    normalizeNodes normalizeNodeValueConstructor state original
+
+normalizeValueConstructor : Normalization.State -> ValueConstructor -> (Normalization.State, ValueConstructor)
+normalizeValueConstructor state original =
+    let
+        (state2, normalizedName) = normalizeNodeString state original.name
+        (state3, normalizedArguments) = normalizeNodeTypeAnnotations state2 original.arguments
+        normalizedValueConstructor = 
+            ValueConstructor
+                normalizedName
+                normalizedArguments
+    in
+        (state3, normalizedValueConstructor)
+
+
 
 normalizeTypeAlias : Normalization.State -> TypeAlias -> (Normalization.State, TypeAlias)
 normalizeTypeAlias state original =
