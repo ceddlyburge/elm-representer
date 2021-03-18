@@ -13,10 +13,14 @@ suite =
                 |> whenNormalize                
                 |> thenContains "IDENTIFIER_1 IDENTIFIER_2 =\nIDENTIFIER_2"
         
-    -- , test "shoud normalize generic type parameters of Custom Types" <|
-    --         \_ ->
-    --             givenElmCodeOf "type InputType a = InputType a String"
-    --             |> whenNormalize                
-    --             |> thenContains "type IDENTIFIER_1 IDENTIFIER_2\n=IDENTIFIER_1 IDENTIFIER_2 String"
+    , test "shoud normalize function signature" <|
+            \_ ->
+                givenElmCodeOf """identityFunction : a -> a
+identityFunction identity =
+    identity"""
+                |> whenNormalize                
+                |> thenContains """IDENTIFIER_1 : IDENTIFIER_2 -> IDENTIFIER_2
+IDENTIFIER_1 IDENTIFIER_3 =
+IDENTIFIER_3"""
 
     ]

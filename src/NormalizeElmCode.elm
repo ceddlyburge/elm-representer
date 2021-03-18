@@ -30,8 +30,6 @@ import Maybe as Maybe
 -- CustomTypeDeclaration probably next, and probably fairly easy
 -- add pull request to elm-syntax repo about the process init thing which is hard to work out
 
--- Declaration.Destructuring
--- functionsignature
 -- LetExpression
 -- CaseExpression
 -- LambdaExpression
@@ -146,18 +144,48 @@ normalizeDeclaration state declaration =
 normalizeFunction : Normalization.State -> Function -> (Normalization.State, Function)
 normalizeFunction state original =
     let
-        (state2, normalizedFunctionImplementation) =
-            normalizeNodeFunctionImplementation 
-                state 
-                original.declaration
         
+        (state2, normalizedSignature) =
+            normalizeMaybe normalizeNodeSignature state original.signature
+
+        (state3, normalizedFunctionImplementation) =
+            normalizeNodeFunctionImplementation 
+                state2 
+                original.declaration
+
+            
         normalizedFunction = 
             Function
                 Maybe.Nothing
-                Maybe.Nothing -- should maybe do the function signature, its not a required thing, but is something that a mentor might comment on, so probably wants to normalize differently 
+                normalizedSignature
                 normalizedFunctionImplementation
     in
-        ( state2, normalizedFunction )
+        ( state3, normalizedFunction )
+
+normalizeNodeSignature : Normalization.State -> Node Signature -> (Normalization.State, Node Signature)
+normalizeNodeSignature state original =
+    normalizeNode normalizeSignature state original
+
+normalizeSignature : Normalization.State -> Signature -> (Normalization.State, Signature)
+normalizeSignature state original = 
+    let
+        (state2, normalizedName) =
+            normalizeNodeString 
+                state 
+                original.name
+
+        (state3, normalizedTypeAnnotation) =
+            normalizeNodeTypeAnnotation
+                state2
+                original.typeAnnotation        
+        
+        normalizedSignature = 
+            Signature
+                normalizedName
+                normalizedTypeAnnotation
+    in
+        ( state3, normalizedSignature )
+ 
 
 normalizeNodeFunctionImplementation : Normalization.State -> Node FunctionImplementation -> (Normalization.State, Node FunctionImplementation)
 normalizeNodeFunctionImplementation state original =
@@ -637,24 +665,6 @@ normalizeTypeName state (originalModuleName, originalTypeName) =
         ( state2, typeName )
 
 
-{-| Custom type for different type annotations. For example:
-  - `Var`: `a`
-  - `Type`: `Maybe (Int -> String)`
-  - `Tuples`: `(a, b, c)` or Unit `()`
-  - `Record`: `{ name : String }`
-  - `ExtensionRecord`: `{ a | name : String }`
-  - `FunctionTypeAnnotation`: `Int -> String`
--}
--- type TypeAnnotation
---     = Var String
---     | Type (Node ( ModuleName, String )) (List (Node TypeAnnotation))
---     | Tuple (List (Node TypeAnnotation))
---     | Record (List (Node RecordField))
---     | ExtensionRecord (Node String) (Node RecordField) (List (Node RecordField))
---     | FunctionTypeAnnotation (Node TypeAnnotation) (Node TypeAnnotation)
-
-
-
 normalizeNodeString : Normalization.State -> Node String -> (Normalization.State, Node String)
 normalizeNodeString state original =
     normalizeNode normalizeString state original
@@ -666,6 +676,18 @@ normalizeString =
 normalizeNodeStrings : Normalization.State -> List (Node String) -> (Normalization.State, List (Node String))
 normalizeNodeStrings state original =
     normalizeNodes normalizeNodeString state original
+
+normalizeMaybe : 
+    (Normalization.State -> a -> (Normalization.State, a)) 
+    -> Normalization.State 
+    -> Maybe a 
+    -> (Normalization.State, Maybe a)
+normalizeMaybe normalizer state maybeOriginal =
+    Maybe.map 
+        (normalizer state) 
+        maybeOriginal
+    |> Maybe.map (\(state2, signature) -> (state2, Just signature))      
+    |> Maybe.withDefault (state, Nothing)       
 
 normalizeNode : 
     (Normalization.State -> a -> (Normalization.State, a)) 
