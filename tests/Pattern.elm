@@ -33,11 +33,18 @@ suite =
 
 
 
-    , test "shoud normalize names pattern" <|
+    , test "shoud normalize named pattern" <|
             \_ ->
                 givenElmCodeOf "value (Node a) =\n    a"
                 |> whenNormalize                
                 |> thenContains "IDENTIFIER_1 ( Node IDENTIFIER_2 ) =\nIDENTIFIER_2"
+
+    , test "shoud normalize as pattern" <|
+            \_ ->
+                givenElmCodeOf "identity ((_, _) as tuple) =\n    tuple"
+                |> whenNormalize                
+                |> thenContains "IDENTIFIER_1 ( (_, _) as IDENTIFIER_2 ) =\nIDENTIFIER_2"
+
 
     -- use for case expression when done
     -- , test "shoud normalize named pattern" <|
