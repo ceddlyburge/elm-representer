@@ -36,5 +36,11 @@ IDENTIFIER_3"""
                 givenElmCodeOf "list x y =\n    [x, y]"
                 |> whenNormalize                
                 |> thenContains "IDENTIFIER_1 IDENTIFIER_2 IDENTIFIER_3 =\n[IDENTIFIER_2, IDENTIFIER_3]"
-        
+
+    , test "shoud normalize paranthesized expressions" <|
+            \_ ->
+                givenElmCodeOf "paranthesized x =\n    (x)"
+                |> whenNormalize                
+                |> thenContains "IDENTIFIER_1 IDENTIFIER_2 =\n(IDENTIFIER_2)"
+                
     ]
