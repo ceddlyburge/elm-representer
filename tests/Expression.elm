@@ -15,7 +15,7 @@ suite =
 
     -- test functionorvalue
         
-    , test "shoud normalize if expressions " <|
+    , test "shoud normalize if expressions" <|
             \_ ->
                 givenElmCodeOf "max x y =\n    if x > y then x else y"
                 |> whenNormalize                
@@ -25,9 +25,16 @@ IDENTIFIER_2
 else
 IDENTIFIER_3"""
 
-    , test "shoud normalize tuple expressions " <|
+    , test "shoud normalize tuple expressions" <|
             \_ ->
                 givenElmCodeOf "tuple x y =\n    (x, y)"
                 |> whenNormalize                
-                |> thenContains """IDENTIFIER_1 IDENTIFIER_2 IDENTIFIER_3 =\n(IDENTIFIER_2, IDENTIFIER_3)"""
+                |> thenContains "IDENTIFIER_1 IDENTIFIER_2 IDENTIFIER_3 =\n(IDENTIFIER_2, IDENTIFIER_3)"
+
+    , test "shoud normalize list expressions" <|
+            \_ ->
+                givenElmCodeOf "list x y =\n    [x, y]"
+                |> whenNormalize                
+                |> thenContains "IDENTIFIER_1 IDENTIFIER_2 IDENTIFIER_3 =\n[IDENTIFIER_2, IDENTIFIER_3]"
+        
     ]
