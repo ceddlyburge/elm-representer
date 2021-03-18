@@ -42,5 +42,11 @@ IDENTIFIER_3"""
                 givenElmCodeOf "paranthesized x =\n    (x)"
                 |> whenNormalize                
                 |> thenContains "IDENTIFIER_1 IDENTIFIER_2 =\n(IDENTIFIER_2)"
+
+    , test "shoud normalize record acces expressions" <|
+            \_ ->
+                givenElmCodeOf "paranthesized x =\n    x.y"
+                |> whenNormalize                
+                |> thenContains "IDENTIFIER_1 IDENTIFIER_2 =\nIDENTIFIER_2.IDENTIFIER_3"
                 
     ]
