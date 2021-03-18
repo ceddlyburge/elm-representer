@@ -30,6 +30,23 @@ import Maybe as Maybe
 -- CustomTypeDeclaration probably next, and probably fairly easy
 -- add pull request to elm-syntax repo about the process init thing which is hard to work out
 
+-- Declaration.Destructuring
+-- functionsignature
+-- LetExpression
+-- CaseExpression
+-- LambdaExpression
+-- RecordAccessFunction
+-- RecordExpr
+-- RecordUpdateExpression
+-- test functionorvalue expression
+-- QualifiedNameRef part of Named pattern
+--  prob want to normalize names in this file, but not imported ones
+--  although this creates a problem if normalizing multiple files
+--  so maybe special case known libraries
+--  I guess the absolute best thing is to check which are external by looking at elm.json and working it out,
+--  or maybe looking for matching files in the src directories.
+
+
 -- special case all primitive types, not just String and Int, so they aren't normalized
 -- special case core types such as Maybe and Result and so on
 -- don't normalize anything outside of the file being looked at? could cause issues with multi file exercism submissions
@@ -105,19 +122,26 @@ normalizeDeclaration state declaration =
                 ( Tuple.first normalizedFunction
                 , Declaration.FunctionDeclaration (Tuple.second normalizedFunction)
                 )
+
+        Declaration.Destructuring originalPattern originalExpression ->
+            let
+                (state2, normalizedPattern) = normalizeNodePattern state originalPattern
+                (state3, normalizedExpression) = normalizeNodeExpression state2 originalExpression
+                normalized = 
+                    Declaration.Destructuring
+                        normalizedPattern
+                        normalizedExpression
+
+            in
+                ( state3
+                , normalized
+                )
+
         -- I don't think we need to worry about port declarations and infixes (which are for core packages only)
         -- but we can revisit later if needs be 
         _ ->
             (state, declaration)
 
--- normaliseDeclaration : IdentifierMapping ->  Declaration -> WithIdentifierMapping Declaration
--- normaliseDeclaration identifierMapping decl =
---         case decl of
-            
---             Declaration.Destructuring x y ->
---                 WithIdentifierMapping
---                     identifierMapping
---                     <| Declaration.Destructuring x y
 
 normalizeFunction : Normalization.State -> Function -> (Normalization.State, Function)
 normalizeFunction state original =
