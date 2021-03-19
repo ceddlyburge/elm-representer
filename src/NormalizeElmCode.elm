@@ -27,8 +27,7 @@ import Maybe as Maybe
 
 -- todo
 
--- RecordExpr
--- RecordUpdateExpression
+    -- RecordUpdateExpression
 -- test functionorvalue expression
 -- QualifiedNameRef part of Named pattern
 --  prob want to normalize names in this file, but not imported ones
@@ -371,12 +370,16 @@ normalizeExpression state originalExpression =
                 (state2, RecordExpr normalized)
 
 
-        RecordUpdateExpression name updates -> -- todo
-            (state, 
-                RecordUpdateExpression 
-                    name
-                    updates 
-            )
+        RecordUpdateExpression name updates ->
+            let
+                (state2, normalizedName) = normalizeNodeString state name
+                (state3, normalizedUpdates) = normalizeNodeRecordSetters state2 updates
+                normalized = 
+                    RecordUpdateExpression
+                        normalizedName
+                        normalizedUpdates
+            in
+                ( state3, normalized )
 
         GLSLExpression original ->
             (state, GLSLExpression original)
