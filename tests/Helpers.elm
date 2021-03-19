@@ -25,7 +25,9 @@ thenContains expected normalizationResult =
             -- keep line breaks, but compresses all other multiple whitespace to a single whitespace
             |> String.lines
             |> List.map String.Extra.clean
+            |> List.filter (String.isEmpty >> not)
             |> String.join "\n"
+            |> String.trim
     in 
         Expect.Extra.match (Expect.Extra.stringPattern expected) normalized
 

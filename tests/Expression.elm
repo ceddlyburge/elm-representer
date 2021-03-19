@@ -43,6 +43,21 @@ IDENTIFIER_3"""
                 |> whenNormalize                
                 |> thenContains "IDENTIFIER_1 IDENTIFIER_2 =\n(IDENTIFIER_2)"
 
+    , test "shoud normalize let expressions" <|
+            \_ ->
+                givenElmCodeOf """identity x =
+    let 
+        y = x
+    in
+        y"""
+                |> whenNormalize                
+                |> thenContains """IDENTIFIER_1 IDENTIFIER_2 =
+let
+IDENTIFIER_3 =
+IDENTIFIER_2
+in
+IDENTIFIER_3"""
+
     , test "shoud normalize record acces expressions" <|
             \_ ->
                 givenElmCodeOf "paranthesized x =\n    x.y"

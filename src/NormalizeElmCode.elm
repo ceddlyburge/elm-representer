@@ -12,7 +12,7 @@ import Elm.Syntax.Comments exposing (Comment)
 import Elm.Syntax.Documentation exposing (Documentation)
 import Elm.Syntax.Node as Node exposing (Node)
 import Elm.Syntax.TypeAnnotation as TypeAnnotation exposing (TypeAnnotation)
-import Elm.Syntax.Expression exposing (Expression(..), Function, FunctionImplementation)
+import Elm.Syntax.Expression exposing (Expression(..), Function, FunctionImplementation, LetBlock, LetDeclaration(..))
 import Elm.Syntax.Type exposing (Type, ValueConstructor)
 import Elm.Syntax.Infix exposing (Infix)
 import Elm.Syntax.Signature exposing (Signature)    
@@ -26,9 +26,6 @@ import Dict as Dict exposing (Dict)
 import Maybe as Maybe
 
 -- todo
--- work my way through the other Declaration cases (adding tests)
--- CustomTypeDeclaration probably next, and probably fairly easy
--- add pull request to elm-syntax repo about the process init thing which is hard to work out
 
 -- LetExpression
 -- CaseExpression
@@ -44,22 +41,21 @@ import Maybe as Maybe
 --  I guess the absolute best thing is to check which are external by looking at elm.json and working it out,
 --  or maybe looking for matching files in the src directories.
 
-
--- special case all primitive types, not just String and Int, so they aren't normalized
--- special case core types such as Maybe and Result and so on
--- don't normalize anything outside of the file being looked at? could cause issues with multi file exercism submissions
--- normalize within scope (so 'a' can normalize to different values if it is defined in different scopes). This would improve the normalization, but the mapping format defined by exercism doesn't support it, so there probably isn't much point, and it would be harder to do
-
 -- convention
--- only use 'normalizeNodes' from other lower level stuff, create and use higher level things elsewhere
-
--- convention variable names to 
---  'state'
---  'original'
+--  only use 'normalizeNodes' from other lower level stuff, create and use higher level things elsewhere
+--  convention variable names where possible to 
+--   'state'
+--   'original'
+--  use tuple destructuring instead of tuple.first etc in case blocks
 
 -- do a round trip at the end of this to make sure that the normalization
 -- code is working. This will catch the potential error when a returned
 -- Normalization.State is ignored instead of being passed in to normalize
+
+-- add pull request to elm-syntax repo about the process init thing which is hard to work out
+
+-- normalize within scope (so 'a' can normalize to different values if it is defined in different scopes). This would improve the normalization, but the mapping format defined by exercism doesn't support it, so there probably isn't much point, and it would be harder to do
+
 normalize : String -> (Dict String String, String)
 normalize unNormalised =
     case Elm.Parser.parse unNormalised of
@@ -328,7 +324,19 @@ normalizeExpression state originalExpression =
                 )
 
         LetExpression original ->
-            (state, LetExpression original) -- todo
+            let
+                (state2, normalizedDeclarations) = normalizeNodeLetDeclarations state original.declarations
+                (state3, normalizedExpression) = normalizeNodeExpression state2 original.expression
+                normalized = 
+                    LetExpression
+                        <| LetBlock
+                            normalizedDeclarations
+                            normalizedExpression
+
+            in
+                ( state3
+                , normalized
+                )
 
         CaseExpression original ->
             (state, CaseExpression original) -- todo
@@ -366,6 +374,34 @@ normalizeExpression state originalExpression =
         GLSLExpression original ->
             (state, GLSLExpression original)
 
+
+normalizeNodeLetDeclaration : Normalization.State -> Node LetDeclaration -> (Normalization.State, Node LetDeclaration)
+normalizeNodeLetDeclaration state original =
+    normalizeNode normalizeLetDeclaration state original
+
+normalizeNodeLetDeclarations : Normalization.State -> List (Node LetDeclaration) -> (Normalization.State, List (Node LetDeclaration))
+normalizeNodeLetDeclarations state original =
+    normalizeNodes normalizeNodeLetDeclaration state original
+
+normalizeLetDeclaration : Normalization.State -> LetDeclaration -> (Normalization.State, LetDeclaration)
+normalizeLetDeclaration state originalLetDeclaration =
+    case originalLetDeclaration of
+        LetFunction original ->
+            let
+                (state2, normalized) = normalizeFunction state original
+            in
+                ( state2 
+                , LetFunction normalized
+                )
+
+        LetDestructuring originalPattern originalExpression ->
+            let
+                (state2, normalizedPattern) = normalizeNodePattern state originalPattern
+                (state3, normalizedExpression) = normalizeNodeExpression state2 originalExpression
+            in
+                ( state3
+                , LetDestructuring normalizedPattern normalizedExpression
+                )
 
 normalizeNodePattern : Normalization.State -> Node Pattern -> (Normalization.State, Node Pattern)
 normalizeNodePattern state original =
