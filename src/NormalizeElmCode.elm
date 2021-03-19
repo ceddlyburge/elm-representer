@@ -27,7 +27,6 @@ import Maybe as Maybe
 
 -- todo
 
--- LambdaExpression
 -- RecordAccessFunction
 -- RecordExpr
 -- RecordUpdateExpression
@@ -362,7 +361,10 @@ normalizeExpression state originalExpression =
 
         -- I think this is '.name' type stuff, so probably need to strip the dot before normalizing
         RecordAccessFunction original ->
-            (state, RecordAccessFunction original) -- todo
+            let
+                (state2, normalized) = normalizeString state original
+            in
+                (state2, RecordAccessFunction normalized)
 
         RecordExpr original ->
             (state, RecordExpr original) -- todo

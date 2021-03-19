@@ -82,11 +82,14 @@ IDENTIFIER_2"""
 
     , test "shoud normalize record access expressions" <|
             \_ ->
-                givenElmCodeOf "paranthesized x =\n    x.y"
+                givenElmCodeOf "getBlah x =\n    x.y"
                 |> whenNormalize                
                 |> thenContains "IDENTIFIER_1 IDENTIFIER_2 =\nIDENTIFIER_2.IDENTIFIER_3"
                 
+    , test "shoud normalize record access function expressions" <|
+            \_ ->
+                givenElmCodeOf "getBlah x =\n    .y x"
+                |> whenNormalize                
+                |> thenContains "IDENTIFIER_1 IDENTIFIER_2 =\n.IDENTIFIER_3 IDENTIFIER_2"
+                
     ]
-
-identity =
-    \x -> x
