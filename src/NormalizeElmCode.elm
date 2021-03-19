@@ -12,7 +12,7 @@ import Elm.Syntax.Comments exposing (Comment)
 import Elm.Syntax.Documentation exposing (Documentation)
 import Elm.Syntax.Node as Node exposing (Node)
 import Elm.Syntax.TypeAnnotation as TypeAnnotation exposing (TypeAnnotation)
-import Elm.Syntax.Expression exposing (Expression(..), Function, FunctionImplementation, LetBlock, LetDeclaration(..), CaseBlock, Case, Cases)
+import Elm.Syntax.Expression exposing (..)
 import Elm.Syntax.Type exposing (Type, ValueConstructor)
 import Elm.Syntax.Infix exposing (Infix)
 import Elm.Syntax.Signature exposing (Signature)    
@@ -337,7 +337,17 @@ normalizeExpression state originalExpression =
                 ( state2, CaseExpression normalized )
 
         LambdaExpression original ->
-            (state, LambdaExpression original) -- todo
+            let
+                (state2, normalizedArguments) = normalizeNodePatterns state original.args
+                (state3, normalizedExpression) = normalizeNodeExpression state2 original.expression
+                normalized = 
+                    LambdaExpression
+                        <| Lambda
+                            normalizedArguments
+                            normalizedExpression
+
+            in
+                ( state3, normalized )
 
         RecordAccess exp name ->
             let

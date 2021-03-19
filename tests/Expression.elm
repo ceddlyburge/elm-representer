@@ -73,10 +73,20 @@ case IDENTIFIER_2 of
 _ ->
 IDENTIFIER_2"""
 
-    , test "shoud normalize record acces expressions" <|
+    , test "shoud normalize lambda expressions" <|
+            \_ ->
+                givenElmCodeOf "identity =\n    \\x -> x"
+
+                |> whenNormalize                
+                |> thenContains "IDENTIFIER_1 =\n\\IDENTIFIER_2 -> IDENTIFIER_2"
+
+    , test "shoud normalize record access expressions" <|
             \_ ->
                 givenElmCodeOf "paranthesized x =\n    x.y"
                 |> whenNormalize                
                 |> thenContains "IDENTIFIER_1 IDENTIFIER_2 =\nIDENTIFIER_2.IDENTIFIER_3"
                 
     ]
+
+identity =
+    \x -> x
