@@ -58,6 +58,21 @@ IDENTIFIER_2
 in
 IDENTIFIER_3"""
 
+    , test "shoud normalize case expressions" <|
+            \_ ->
+                givenElmCodeOf """identity x =
+    case x of 
+        1 -> 1
+        _ -> x"""
+
+                |> whenNormalize                
+                |> thenContains """IDENTIFIER_1 IDENTIFIER_2 =
+case IDENTIFIER_2 of
+1 ->
+1
+_ ->
+IDENTIFIER_2"""
+
     , test "shoud normalize record acces expressions" <|
             \_ ->
                 givenElmCodeOf "paranthesized x =\n    x.y"

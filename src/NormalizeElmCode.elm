@@ -12,7 +12,7 @@ import Elm.Syntax.Comments exposing (Comment)
 import Elm.Syntax.Documentation exposing (Documentation)
 import Elm.Syntax.Node as Node exposing (Node)
 import Elm.Syntax.TypeAnnotation as TypeAnnotation exposing (TypeAnnotation)
-import Elm.Syntax.Expression exposing (Expression(..), Function, FunctionImplementation, LetBlock, LetDeclaration(..))
+import Elm.Syntax.Expression exposing (Expression(..), Function, FunctionImplementation, LetBlock, LetDeclaration(..), CaseBlock, Case, Cases)
 import Elm.Syntax.Type exposing (Type, ValueConstructor)
 import Elm.Syntax.Infix exposing (Infix)
 import Elm.Syntax.Signature exposing (Signature)    
@@ -27,8 +27,6 @@ import Maybe as Maybe
 
 -- todo
 
--- LetExpression
--- CaseExpression
 -- LambdaExpression
 -- RecordAccessFunction
 -- RecordExpr
@@ -247,9 +245,7 @@ normalizeExpression state originalExpression =
                         normalizedRight
 
             in
-                ( state3
-                , normalized
-                )
+                ( state3 , normalized )
 
         FunctionOrValue originalModuleName originalName ->
             let
@@ -271,9 +267,7 @@ normalizeExpression state originalExpression =
                         normalizedElse
 
             in
-                ( state4
-                , normalized
-                )
+                ( state4, normalized )
 
         PrefixOperator original ->
             (state, PrefixOperator original)
@@ -334,12 +328,13 @@ normalizeExpression state originalExpression =
                             normalizedExpression
 
             in
-                ( state3
-                , normalized
-                )
+                ( state3, normalized )
 
         CaseExpression original ->
-            (state, CaseExpression original) -- todo
+            let
+                (state2, normalized) = normalizeCaseBlock state original
+            in
+                ( state2, CaseExpression normalized )
 
         LambdaExpression original ->
             (state, LambdaExpression original) -- todo
@@ -353,9 +348,7 @@ normalizeExpression state originalExpression =
                         normalizedExpression
                         normalizedName
             in
-                ( state3
-                , normalized
-                )
+                ( state3, normalized )
 
         -- I think this is '.name' type stuff, so probably need to strip the dot before normalizing
         RecordAccessFunction original ->
@@ -374,6 +367,29 @@ normalizeExpression state originalExpression =
         GLSLExpression original ->
             (state, GLSLExpression original)
 
+normalizeCaseBlock : Normalization.State -> CaseBlock -> (Normalization.State, CaseBlock)
+normalizeCaseBlock state original =
+    let
+        (state2, normalizedExpression) = normalizeNodeExpression state original.expression
+        
+        (state3, normalizedCases) = normalizeCases state2 original.cases
+        
+        normalized = CaseBlock normalizedExpression normalizedCases
+    in
+        ( state3, normalized )
+
+normalizeCases : Normalization.State -> List Case -> (Normalization.State, List Case)
+normalizeCases state original =
+    normalizeList normalizeCase state original
+
+normalizeCase : Normalization.State -> Case -> (Normalization.State, Case)
+normalizeCase state (originalPattern, originalExpression) =
+    let
+        (state2, normalizedPattern)  = normalizeNodePattern state originalPattern
+        (state3, normalizedExpression) = normalizeNodeExpression state2 originalExpression
+        normalized = (normalizedPattern, normalizedExpression)
+    in
+        ( state3, normalized )
 
 normalizeNodeLetDeclaration : Normalization.State -> Node LetDeclaration -> (Normalization.State, Node LetDeclaration)
 normalizeNodeLetDeclaration state original =
@@ -762,4 +778,28 @@ normalizeAccumulateNode normalizer original (state, normalizedNodes) =
     in
         ( nextState
         , normalizedNodes ++ [normalized]
+        )
+
+normalizeList : 
+    (Normalization.State -> a -> (Normalization.State, a)) 
+    -> Normalization.State 
+    -> List a 
+    -> (Normalization.State, List a)
+normalizeList normalizer state original =
+    List.foldl
+        (normalizeAccumulateListItem normalizer) 
+        (state, []) 
+        original
+
+normalizeAccumulateListItem : 
+    (Normalization.State -> a -> (Normalization.State, a)) 
+    -> a 
+    -> (Normalization.State, List a) 
+    -> (Normalization.State, List a)
+normalizeAccumulateListItem normalizer original (state, normalizedList) =
+    let
+        (nextState, normalized) = normalizer state original
+    in
+        ( nextState
+        , normalizedList ++ [normalized]
         )

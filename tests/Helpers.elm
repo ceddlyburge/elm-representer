@@ -15,17 +15,21 @@ whenNormalize : String -> (Dict String String, String)
 whenNormalize =
     NormalizeElmCode.normalize
 
+-- The output from Elm-Syntax isn't the same as Elm-Format, and also isn't always
+-- consistent, so this function tries to make it as consistent as possile, although
+-- it does turn the code in to illegal Elm by removing required whitespace.
+-- Hopefully the tradeoff is worth it
 thenContains : String -> (Dict String String, String) -> Expectation
 thenContains expected normalizationResult =
     let
         normalized = 
             Tuple.second normalizationResult
-            -- removes added boilerplate
+            -- remove added boilerplate
             |> String.replace boilerplate ""
-            -- keep line breaks, but compresses all other multiple whitespace to a single whitespace
+            -- keep line breaks, but compress all other multiple whitespace to a single whitespace
             |> String.lines
             |> List.map String.Extra.clean
-            |> List.filter (String.isEmpty >> not)
+            |> List.filter (String.isEmpty >> not) -- remove blank lines
             |> String.join "\n"
             |> String.trim
     in 
