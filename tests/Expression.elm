@@ -92,4 +92,10 @@ IDENTIFIER_2"""
                 |> whenNormalize                
                 |> thenContains "IDENTIFIER_1 IDENTIFIER_2 =\n.IDENTIFIER_3 IDENTIFIER_2"
                 
+    , test "shoud normalize record expressions" <|
+            \_ ->
+                givenElmCodeOf "fromFirstName =\n    { name = firstName }"
+                |> whenNormalize                
+                |> thenContains "IDENTIFIER_1 =\n{IDENTIFIER_2 = IDENTIFIER_3}"
+                
     ]

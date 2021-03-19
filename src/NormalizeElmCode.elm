@@ -27,7 +27,6 @@ import Maybe as Maybe
 
 -- todo
 
--- RecordAccessFunction
 -- RecordExpr
 -- RecordUpdateExpression
 -- test functionorvalue expression
@@ -359,7 +358,6 @@ normalizeExpression state originalExpression =
             in
                 ( state3, normalized )
 
-        -- I think this is '.name' type stuff, so probably need to strip the dot before normalizing
         RecordAccessFunction original ->
             let
                 (state2, normalized) = normalizeString state original
@@ -367,7 +365,11 @@ normalizeExpression state originalExpression =
                 (state2, RecordAccessFunction normalized)
 
         RecordExpr original ->
-            (state, RecordExpr original) -- todo
+            let
+                (state2, normalized) = normalizeNodeRecordSetters state original
+            in
+                (state2, RecordExpr normalized)
+
 
         RecordUpdateExpression name updates -> -- todo
             (state, 
@@ -387,6 +389,23 @@ normalizeCaseBlock state original =
         (state3, normalizedCases) = normalizeCases state2 original.cases
         
         normalized = CaseBlock normalizedExpression normalizedCases
+    in
+        ( state3, normalized )
+
+normalizeNodeRecordSetter : Normalization.State -> Node RecordSetter -> (Normalization.State, Node RecordSetter)
+normalizeNodeRecordSetter state original =
+    normalizeNode normalizeRecordSetter state original
+
+normalizeNodeRecordSetters : Normalization.State -> List (Node RecordSetter) -> (Normalization.State, List (Node RecordSetter))
+normalizeNodeRecordSetters state original =
+    normalizeNodes normalizeNodeRecordSetter state original
+
+normalizeRecordSetter : Normalization.State -> RecordSetter -> (Normalization.State, RecordSetter)
+normalizeRecordSetter state (originalName, originalExpression) =
+    let
+        (state2, normalizedName)  = normalizeNodeString state originalName
+        (state3, normalizedExpression) = normalizeNodeExpression state2 originalExpression
+        normalized = (normalizedName, normalizedExpression)
     in
         ( state3, normalized )
 
