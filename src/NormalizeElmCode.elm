@@ -27,7 +27,9 @@ import Maybe as Maybe
 
 -- todo
 
-    -- RecordUpdateExpression
+-- ensure normalization is case senstive
+-- special case all primitives in normalization (add to dict in initialize - Bool, Int, Float, Char, String, True, False, number, appendable, comparable, compappend)
+-- special case things in Core probably, things that don't need an import. String, Char
 -- test functionorvalue expression
 -- QualifiedNameRef part of Named pattern
 --  prob want to normalize names in this file, but not imported ones
@@ -35,6 +37,19 @@ import Maybe as Maybe
 --  so maybe special case known libraries
 --  I guess the absolute best thing is to check which are external by looking at elm.json and working it out,
 --  or maybe looking for matching files in the src directories.
+-- exposing (..) also problematic
+-- think the problem is basically intractable without doing more than elm-syntax does
+-- so probably just make it work well for the most common exercism case
+-- which is a single file with a single exported function, and some private functions and some imports
+-- also the file doesn't need to compile, it just needs to be consistent
+-- 1. leave module name as is
+-- 2. leaving anything explicitly exposed as is
+-- 3. leave anything imported as is 
+--     ( would cause a problem if doing multiple files, and the imported file exposed .., as then this file would leave the name as is, but the imported file would normalize it)
+--     ( would lead to compile errors if importing anything external as .., as names will be normalized in this file, but obviously not in the external file )
+-- probably want to run on some existing solutions and see how it looks
+-- the unison way of doing things would be good here!s
+
 
 -- convention
 --  only use 'normalizeNodes' from other lower level stuff, create and use higher level things elsewhere
@@ -43,13 +58,13 @@ import Maybe as Maybe
 --   'original'
 --  use tuple destructuring instead of tuple.first etc in case blocks
 
--- do a round trip at the end of this to make sure that the normalization
--- code is working. This will catch the potential error when a returned
--- Normalization.State is ignored instead of being passed in to normalize
+-- Later: do a round trip at the end of this to make sure that the normalization
+--  code is working. This will catch the potential error when a returned
+--  Normalization.State is ignored instead of being passed in to normalize
 
--- add pull request to elm-syntax repo about the process init thing which is hard to work out
+-- Later: add pull request to elm-syntax repo about the process init thing which is hard to work out
 
--- normalize within scope (so 'a' can normalize to different values if it is defined in different scopes). This would improve the normalization, but the mapping format defined by exercism doesn't support it, so there probably isn't much point, and it would be harder to do
+-- Later, probably never: normalize within scope (so 'a' can normalize to different values if it is defined in different scopes). This would improve the normalization, but the mapping format defined by exercism doesn't support it, so there probably isn't much point, and it would be harder to do
 
 normalize : String -> (Dict String String, String)
 normalize unNormalised =
