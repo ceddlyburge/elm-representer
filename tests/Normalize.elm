@@ -65,9 +65,18 @@ suite =
                 normalize "compappend"
                 |> Expect.equal "compappend"
       
+    , test "shoud be case sensitive" <|
+            \_ ->
+                normalize2 "x" "X"
+                |> Expect.equal [ "IDENTIFIER_1", "IDENTIFIER_2" ]
     ]
 
 normalize string =
     Normalization.initialize 
     |> \state -> Normalization.normalize state string
     |> Tuple.second
+
+normalize2 string1 string2 =
+    Normalization.initialize 
+    |> \state -> Normalization.normalize state string1
+    |> \(state2, normalized1) -> normalized1 :: [ Tuple.second (Normalization.normalize state2 string2) ]

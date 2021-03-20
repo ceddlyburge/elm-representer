@@ -28,9 +28,8 @@ import Maybe as Maybe
 -- todo
 
 -- ensure normalization is case senstive
--- special case all primitives in normalization (add to dict in initialize - Bool, Int, Float, Char, String, True, False, number, appendable, comparable, compappend)
--- special case things in Core probably, things that don't need an import. String, Char
--- test functionorvalue expression
+-- special case things in Core probably, things that don't need an import. String.blah, Char.blah
+-- test functionorvalue expression - not sure how to do this, maybe not worth worrying about
 -- QualifiedNameRef part of Named pattern
 --  prob want to normalize names in this file, but not imported ones
 --  although this creates a problem if normalizing multiple files
