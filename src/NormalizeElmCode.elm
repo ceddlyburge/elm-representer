@@ -24,7 +24,7 @@ import Elm.Writer exposing (writeFile)
 import Normalization 
 import List
 import Dict as Dict exposing (Dict)
-import Maybe as Maybe
+import Maybe
 
 -- todo
 
@@ -100,14 +100,15 @@ normalize unNormalised =
 normalizeElmFile : File -> (Normalization.State, File)
 normalizeElmFile original = 
     let
-        moduleName = Module.moduleName (Node.value original.moduleDefinition)
+        --moduleName = Module.moduleName (Node.value original.moduleDefinition)
         exportedNames = 
             Module.exposingList (Node.value original.moduleDefinition)
-            |> exposedNames
-        --importedNames = 
-        --    original.imports
-        --    |> List.map Node.value
-        state = Normalization.initialize exportedNames
+            |> exposingNames
+        importedNames = 
+           original.imports
+           |> List.map Node.value
+           |> List.concatMap importNames
+        state = Normalization.initialize (exportedNames ++ importedNames)
         
         (state2, normalizedDeclarations) =
             normalizeNodes normalizeNodeDeclaration state original.declarations
@@ -123,41 +124,36 @@ normalizeElmFile original =
         ( state2
         , normalizedFile)
 
--- {-| Diffent kind of exposing declarations
--- -}
--- type Exposing
---     = All Range
---     | Explicit (List (Node TopLevelExpose))
+
+importNames : Import -> List String
+importNames theImport =
+    let
+        explicits = 
+            Maybe.map Node.value theImport.exposingList
+            |> Maybe.map exposingNames 
+            |> Maybe.withDefault []
+        aliasName = 
+            Maybe.map Node.value theImport.moduleAlias
+            |> Maybe.map (String.join ".")
+            |> Maybe.map List.singleton
+            |> Maybe.withDefault []
+    in
+        explicits ++ aliasName
 
 
--- {-| An exposed entity
--- -}
--- type TopLevelExpose
---     = InfixExpose String
---     | FunctionExpose String
---     | TypeOrAliasExpose String
---     | TypeExpose ExposedType
-
-
--- {-| Exposed Type
--- -}
--- type alias ExposedType =
---     { name : String
---     , open : Maybe Range
---     }
-exposedNames : Exposing -> List String
-exposedNames theExposing =
+exposingNames : Exposing -> List String
+exposingNames theExposing =
     case theExposing of
         All _ ->
             []
 
         Explicit nodeExposings ->
             List.map Node.value nodeExposings
-            |> List.map exposedName
+            |> List.map topLevelExposeName
 
 
-exposedName : TopLevelExpose -> String
-exposedName topLevelExpose =
+topLevelExposeName : TopLevelExpose -> String
+topLevelExposeName topLevelExpose =
     case topLevelExpose of
         InfixExpose name ->
             name

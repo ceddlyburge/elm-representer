@@ -30,4 +30,17 @@ length list = L.length list"""
 IDENTIFIER_1 : L.List -> Int
 IDENTIFIER_1 IDENTIFIER_2 =
 L.length IDENTIFIER_2"""        
+
+
+    , test "shoud not normalize open imports" <|
+            \_ ->
+                givenElmCodeOf """import List exposing (List, length)
+
+shadowLength : List -> Int                
+shadowLength list = length list"""
+                |> whenNormalize                
+                |> thenContains """import List exposing (List, length)
+IDENTIFIER_1 : List -> Int
+IDENTIFIER_1 IDENTIFIER_2 =
+length IDENTIFIER_2"""        
     ]
