@@ -72,11 +72,11 @@ suite =
     ]
 
 normalize string =
-    Normalization.initialize 
+    Normalization.initialize []
     |> \state -> Normalization.normalize state string
     |> Tuple.second
 
 normalize2 string1 string2 =
-    Normalization.initialize 
+    Normalization.initialize []
     |> \state -> Normalization.normalize state string1
     |> \(state2, normalized1) -> normalized1 :: [ Tuple.second (Normalization.normalize state2 string2) ]

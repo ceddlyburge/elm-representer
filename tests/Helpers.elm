@@ -1,4 +1,4 @@
-module Helpers exposing (givenElmCodeOf, whenNormalize, thenContains)
+module Helpers exposing (givenElmCodeOf, givenElmFileOf, whenNormalize, thenContains)
 
 import Expect exposing (Expectation)
 import Expect.Extra
@@ -10,6 +10,10 @@ import NormalizeElmCode
 givenElmCodeOf: String -> String
 givenElmCodeOf elmCode = 
     boilerplate ++ elmCode
+
+givenElmFileOf: String -> String
+givenElmFileOf elmFile = 
+    elmFile
 
 whenNormalize : String -> (Dict String String, String)
 whenNormalize =

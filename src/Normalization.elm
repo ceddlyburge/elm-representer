@@ -5,11 +5,10 @@ import Dict as Dict exposing (Dict)
 type State =
     State (Dict String String) Int
 
-initialize : State
-initialize =
+initialize : List String -> State
+initialize customReservedWords =
     let
         reservedWords = 
-            Dict.fromList 
             [ ("Bool","Bool")
             , ("String","String")
             , ("Char","Char")
@@ -22,8 +21,12 @@ initialize =
             , ("True","True")
             , ("False","False")
             ]
+            ++ 
+            List.map (\s -> (s, s)) customReservedWords
+        
+        initialIdentifierMapping = Dict.fromList reservedWords
     in
-        State reservedWords 1
+        State initialIdentifierMapping 1
 
 normalize : State -> String -> (State, String)
 normalize state original =

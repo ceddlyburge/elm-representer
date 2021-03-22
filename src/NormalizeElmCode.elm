@@ -7,7 +7,8 @@ import Elm.Syntax.Node as Node exposing (Node)
 import Elm.Syntax.TypeAlias exposing (TypeAlias)
 import Elm.Syntax.Pattern exposing (Pattern(..))
 import Elm.Syntax.Import exposing (Import)
-import Elm.Syntax.Module exposing (Module)
+import Elm.Syntax.Exposing as Exposing exposing (Exposing(..), TopLevelExpose(..), ExposedType)
+import Elm.Syntax.Module as Module exposing (Module)
 import Elm.Syntax.Comments exposing (Comment)
 import Elm.Syntax.Documentation exposing (Documentation)
 import Elm.Syntax.Node as Node exposing (Node)
@@ -27,9 +28,25 @@ import Maybe as Maybe
 
 -- todo
 
--- ensure normalization is case senstive
+-- get list of explicitly exposed things and pass then to init (bob and hey for 'module Bob exposing (hey)')
+
+-- get list of imports and add explicitly exposed things
+--  Elm.Parser in import Elm.Parser
+--  File (and maybe Elm.Syntax.File) in import Elm.Syntax.File exposing (File)
+--  Pattern in import Elm.Syntax.Pattern exposing (Pattern(..))
+-- etc
+
+-- if a name of a thing as a dot in it (List.map) then probably assume that it shouldn't be normalized
+--  maybe QualifiedNameRef will do this for us, need to test
+
+-- slightly more complicated, if the name of the thing started with an imported thing (Elm.Parser.blah) then don't normalize
+--  this requires this list of imports being added to the normalizer
+--  these things must always start with a capital letter i think
+
+
+-- use Exposing.exposesFunction : String -> Exposing -> Bool
+-- and same in Imports, Interface
 -- special case things in Core probably, things that don't need an import. String.blah, Char.blah
--- test functionorvalue expression - not sure how to do this, maybe not worth worrying about
 -- QualifiedNameRef part of Named pattern
 --  prob want to normalize names in this file, but not imported ones
 --  although this creates a problem if normalizing multiple files
@@ -48,6 +65,7 @@ import Maybe as Maybe
 --     ( would lead to compile errors if importing anything external as .., as names will be normalized in this file, but obviously not in the external file )
 -- probably want to run on some existing solutions and see how it looks
 -- the unison way of doing things would be good here!s
+-- test functionorvalue expression - not sure how to do this, maybe not worth worrying about
 
 
 -- convention
@@ -71,16 +89,24 @@ normalize unNormalised =
         Err error ->
             (Dict.empty, "Failed: " ++ Debug.toString error)
         Ok rawFile ->
-            normalizeElmFile 
-                Normalization.initialize
-                (process init rawFile) 
+            process init rawFile
+            |> normalizeElmFile
             |> Tuple.mapFirst Normalization.getIdentifierMapping
             |> Tuple.mapSecond (writeFile >> write)
 
 
-normalizeElmFile : Normalization.State -> File -> (Normalization.State, File)
-normalizeElmFile state original = 
+normalizeElmFile : File -> (Normalization.State, File)
+normalizeElmFile original = 
     let
+        moduleName = Module.moduleName (Node.value original.moduleDefinition)
+        exportedNames = 
+            Module.exposingList (Node.value original.moduleDefinition)
+            |> exposedNames
+        --importedNames = 
+        --    original.imports
+        --    |> List.map Node.value
+        state = Normalization.initialize exportedNames
+        
         (state2, normalizedDeclarations) =
             normalizeNodes normalizeNodeDeclaration state original.declarations
 
@@ -94,6 +120,56 @@ normalizeElmFile state original =
     in
         ( state2
         , normalizedFile)
+
+-- {-| Diffent kind of exposing declarations
+-- -}
+-- type Exposing
+--     = All Range
+--     | Explicit (List (Node TopLevelExpose))
+
+
+-- {-| An exposed entity
+-- -}
+-- type TopLevelExpose
+--     = InfixExpose String
+--     | FunctionExpose String
+--     | TypeOrAliasExpose String
+--     | TypeExpose ExposedType
+
+
+-- {-| Exposed Type
+-- -}
+-- type alias ExposedType =
+--     { name : String
+--     , open : Maybe Range
+--     }
+exposedNames : Exposing -> List String
+exposedNames theExposing =
+    case theExposing of
+        All _ ->
+            []
+
+        Explicit nodeExposings ->
+            List.map Node.value nodeExposings
+            |> List.map exposedName
+
+
+exposedName : TopLevelExpose -> String
+exposedName topLevelExpose =
+    case topLevelExpose of
+        InfixExpose name ->
+            name
+
+        FunctionExpose name ->
+            name
+
+        TypeOrAliasExpose name ->
+            name
+
+        TypeExpose { name } ->
+            name
+ 
+
 
 normalizeNodeDeclaration : Normalization.State -> Node Declaration -> (Normalization.State, Node Declaration)
 normalizeNodeDeclaration state original =
