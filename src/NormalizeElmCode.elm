@@ -28,6 +28,8 @@ import Maybe as Maybe
 
 -- todo
 
+-- check types defined in file are normalized in NamedPattern
+
 -- get list of explicitly exposed things and pass then to init (bob and hey for 'module Bob exposing (hey)')
 
 -- get list of imports and add explicitly exposed things
@@ -336,11 +338,12 @@ normalizeExpression state originalExpression =
 
         FunctionOrValue originalModuleName originalName ->
             let
-                normalized = normalizeString state originalName
+                (state2, normalized) = normalizeString state originalName
             in
-                ( Tuple.first normalized
-                , FunctionOrValue originalModuleName (Tuple.second normalized)
-                )
+                if (List.isEmpty originalModuleName) then
+                    ( state2, FunctionOrValue originalModuleName normalized)
+                else
+                    (state, FunctionOrValue originalModuleName originalName)
 
         IfBlock c t e ->
             let
@@ -611,22 +614,16 @@ normalizePattern state originalPattern =
 
         VarPattern original ->
             let
-                normalized = normalizeString state original
+                (state2, normalized) = normalizeString state original
             in
-                ( Tuple.first normalized
-                , VarPattern (Tuple.second normalized)
-                )
+                ( state2, VarPattern normalized)
 
         NamedPattern qualifiedNameRef patterns ->
             let
-                -- should probably do the qualifiedNameRef as well
-                --(state2, normalized1) = normalizeNodePattern state qualifiedNameRef
-                (state2, normalized2) = normalizeNodePatterns state patterns
+                ( state2, normalizedPatterns ) = normalizeNodePatterns state patterns
 
             in
-                ( state2
-                , NamedPattern qualifiedNameRef normalized2
-                )
+                (state2, NamedPattern qualifiedNameRef normalizedPatterns)
 
         AsPattern pattern name ->
             let
@@ -634,9 +631,7 @@ normalizePattern state originalPattern =
                 (state3, normalizedName) = normalizeNodeString state2 name
 
             in
-                ( state3
-                , AsPattern normalizedPattern normalizedName
-                )
+                ( state3, AsPattern normalizedPattern normalizedName)
 
         ParenthesizedPattern original ->
             let
@@ -838,7 +833,10 @@ normalizeTypeName state (originalModuleName, originalTypeName) =
 
         typeName = (originalModuleName, normalizedTypeName)        
     in
-        ( state2, typeName )
+        if (List.isEmpty originalModuleName) then
+            ( state2, typeName )
+        else
+            (state, (originalModuleName, originalTypeName))
 
 
 normalizeNodeString : Normalization.State -> Node String -> (Normalization.State, Node String)

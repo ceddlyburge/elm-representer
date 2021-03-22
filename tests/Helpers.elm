@@ -9,7 +9,7 @@ import NormalizeElmCode
 
 givenElmCodeOf: String -> String
 givenElmCodeOf elmCode = 
-    boilerplate ++ elmCode
+    boilerplate ++ "\n\n" ++ elmCode
 
 givenElmFileOf: String -> String
 givenElmFileOf elmFile = 
@@ -41,6 +41,4 @@ thenContains expected normalizationResult =
 
 boilerplate : String
 boilerplate = 
-    """module Boilerplate exposing (..)
-
-"""
+    "module Boilerplate exposing (..)"
