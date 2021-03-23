@@ -1,18 +1,18 @@
 module TwelveDays exposing (recite)
 
 
-recite : Int -> (Int -> IDENTIFIER_1 String)
-recite IDENTIFIER_2 IDENTIFIER_3 =
-    List.map IDENTIFIER_4 (List.range IDENTIFIER_2 IDENTIFIER_3)
+recite : Int -> (Int -> List String)
+recite IDENTIFIER_1 IDENTIFIER_2 =
+    List.map IDENTIFIER_3 (List.range IDENTIFIER_1 IDENTIFIER_2)
 
-IDENTIFIER_4 : Int -> String
-IDENTIFIER_4 IDENTIFIER_5 =
-    "On the " ++ IDENTIFIER_6 IDENTIFIER_5 ++ " day of Christmas my true love gave to me, " ++ IDENTIFIER_7 IDENTIFIER_5
+IDENTIFIER_3 : Int -> String
+IDENTIFIER_3 IDENTIFIER_4 =
+    "On the " ++ IDENTIFIER_5 IDENTIFIER_4 ++ " day of Christmas my true love gave to me, " ++ IDENTIFIER_6 IDENTIFIER_4
 
-IDENTIFIER_6 : Int -> String
-IDENTIFIER_6 IDENTIFIER_8 =
+IDENTIFIER_5 : Int -> String
+IDENTIFIER_5 IDENTIFIER_7 =
     
-    case IDENTIFIER_8 of
+    case IDENTIFIER_7 of
       1 ->
         "first"
       2 ->
@@ -41,15 +41,15 @@ IDENTIFIER_6 IDENTIFIER_8 =
         ""
     
 
-IDENTIFIER_7 : Int -> String
-IDENTIFIER_7 IDENTIFIER_5 =
+IDENTIFIER_6 : Int -> String
+IDENTIFIER_6 IDENTIFIER_4 =
     String.join " "
-     (List.range 1 IDENTIFIER_5 |> List.reverse |> List.map IDENTIFIER_9)
+     (List.range 1 IDENTIFIER_4 |> List.reverse |> List.map IDENTIFIER_8)
 
-IDENTIFIER_9 : Int -> String
-IDENTIFIER_9 IDENTIFIER_5 =
+IDENTIFIER_8 : Int -> String
+IDENTIFIER_8 IDENTIFIER_4 =
     
-    case IDENTIFIER_5 of
+    case IDENTIFIER_4 of
       1 ->
         "a Partridge in a Pear Tree."
       2 ->

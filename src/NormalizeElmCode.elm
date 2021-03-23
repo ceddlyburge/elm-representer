@@ -24,11 +24,7 @@ import Parser
 
 -- todo
 -- do it on a lot of current solutions and check the results are ok
---  The Triangle type name in Triangle.elm isn't normalized. This is fine, exposed things aren't normalized
---  Result can be used without being imported, probably there are other things like this I need to look in to as well
---   Maybe doesn't need an import
---   List doesn't require an import
---   Dict requires an import
+--  Raindrops.elm:  the typeclasses (number etc) are only reserved words in type signatures I think, so need to deal with that.
 --
 -- Later: split up this file in to smaller files
 -- Later: create a build

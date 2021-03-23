@@ -5,24 +5,24 @@ type Triangle
 |IDENTIFIER_2 
 |IDENTIFIER_3 
 
-triangleKindGivenSideLengths : Float -> (Float -> (Float -> IDENTIFIER_4 String Triangle))
-triangleKindGivenSideLengths IDENTIFIER_5 IDENTIFIER_6 IDENTIFIER_7 =
-    if IDENTIFIER_5 <= 0 || IDENTIFIER_6 <= 0 || IDENTIFIER_7 <= 0 then
-      IDENTIFIER_8 "Invalid lengths"
+triangleKindGivenSideLengths : Float -> (Float -> (Float -> Result String Triangle))
+triangleKindGivenSideLengths IDENTIFIER_4 IDENTIFIER_5 IDENTIFIER_6 =
+    if IDENTIFIER_4 <= 0 || IDENTIFIER_5 <= 0 || IDENTIFIER_6 <= 0 then
+      Err "Invalid lengths"
     else
-      if IDENTIFIER_5 + IDENTIFIER_6 < IDENTIFIER_7 || IDENTIFIER_5 + IDENTIFIER_7 < IDENTIFIER_6 || IDENTIFIER_6 + IDENTIFIER_7 < IDENTIFIER_5 then
-        IDENTIFIER_8 "Violates inequality"
+      if IDENTIFIER_4 + IDENTIFIER_5 < IDENTIFIER_6 || IDENTIFIER_4 + IDENTIFIER_6 < IDENTIFIER_5 || IDENTIFIER_5 + IDENTIFIER_6 < IDENTIFIER_4 then
+        Err "Violates inequality"
       else
         
-        case [IDENTIFIER_5, IDENTIFIER_6, IDENTIFIER_7] |> IDENTIFIER_9 of
+        case [IDENTIFIER_4, IDENTIFIER_5, IDENTIFIER_6] |> IDENTIFIER_7 of
           1 ->
-            IDENTIFIER_10 IDENTIFIER_1
+            Ok IDENTIFIER_1
           2 ->
-            IDENTIFIER_10 IDENTIFIER_2
+            Ok IDENTIFIER_2
           _ ->
-            IDENTIFIER_10 IDENTIFIER_3
+            Ok IDENTIFIER_3
         
 
-IDENTIFIER_9 : IDENTIFIER_11 comparable -> Int
-IDENTIFIER_9  =
+IDENTIFIER_7 : List comparable -> Int
+IDENTIFIER_7  =
     Set.fromList >> Set.size

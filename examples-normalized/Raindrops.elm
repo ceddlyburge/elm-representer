@@ -17,10 +17,10 @@ raindrops number =
           IDENTIFIER_3 |> String.join ""
       
 
-IDENTIFIER_2 : Int -> (IDENTIFIER_4 ((Int, String)) -> IDENTIFIER_4 String)
+IDENTIFIER_2 : Int -> (List ((Int, String)) -> List String)
 IDENTIFIER_2 number IDENTIFIER_1 =
-    IDENTIFIER_1 |> List.filter (Tuple.first >> IDENTIFIER_5 number) |> List.map Tuple.second
+    IDENTIFIER_1 |> List.filter (Tuple.first >> IDENTIFIER_4 number) |> List.map Tuple.second
 
-IDENTIFIER_5 : Int -> (Int -> Bool)
-IDENTIFIER_5 IDENTIFIER_6 IDENTIFIER_7 =
-    IDENTIFIER_8 IDENTIFIER_7 IDENTIFIER_6 == 0
+IDENTIFIER_4 : Int -> (Int -> Bool)
+IDENTIFIER_4 IDENTIFIER_5 IDENTIFIER_6 =
+    modBy IDENTIFIER_6 IDENTIFIER_5 == 0
