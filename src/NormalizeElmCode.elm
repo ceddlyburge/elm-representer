@@ -17,21 +17,23 @@ import Elm.Syntax.Type exposing (Type, ValueConstructor)
 import Elm.Syntax.TypeAlias exposing (TypeAlias)
 import Elm.Syntax.TypeAnnotation as TypeAnnotation exposing (TypeAnnotation)
 import Elm.Writer exposing (write, writeFile)
-import List
-import Maybe
 import Normalization
+import Parser
 
 
 
 -- todo
--- elm-format
--- check types defined in file are normalized in NamedPattern
 -- do it on a lot of current solutions and check the results are ok
--- [x] bob
--- Later: commit and then delete the investigative versions of the code I was trialling before picking one
+--  The Triangle type name in Triangle.elm isn't normalized. This is fine, exposed things aren't normalized
+--  Result can be used without being imported, probably there are other things like this I need to look in to as well
+--   Maybe doesn't need an import
+--   List doesn't require an import
+--   Dict requires an import
+--
 -- Later: split up this file in to smaller files
 -- Later: create a build
 -- Later: dockerise
+-- run elm-format afterwards. the code created by elm-syntax can be a bit weird, and is more likely to change that the format that elm-format insists on/
 -- Later: add code coverage
 -- Later: create pull request with
 -- Later: do a round trip at the end of this to make sure that the normalization
@@ -45,7 +47,7 @@ normalize : String -> ( Dict String String, String )
 normalize original =
     case Elm.Parser.parse original of
         Err error ->
-            ( Dict.empty, "Failed: " ++ Debug.toString error )
+            ( Dict.empty, "Failed: " ++ Parser.deadEndsToString error )
 
         Ok rawFile ->
             process init rawFile

@@ -16,5 +16,11 @@ sh make.sh -d
 ## Usage
 
 ```bash
-node src/cli.js 47
+node src/cli.js "$(cat bob.elm)" > normalised.elm
+```
+
+## Testing
+
+```
+elm-test
 ```

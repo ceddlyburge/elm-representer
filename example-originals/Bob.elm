@@ -3,6 +3,24 @@ module Bob exposing (hey)
 import Regex exposing (Regex)
 
 
+type Cedd a b
+    = Cedd a b
+
+
+
+-- this type alias is just so cedd can see it being normalised, not part of original solution
+
+
+type alias InputType a b =
+    Cedd a b
+
+
+type alias Person =
+    { name : String
+    , age : Int
+    }
+
+
 hey : String -> String
 hey s =
     if isShouting s && isQuestioning s then

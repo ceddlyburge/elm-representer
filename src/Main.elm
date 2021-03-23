@@ -59,11 +59,11 @@ subscriptions _ =
 
 transform : InputType -> OutputType
 transform unNormalised =
-    -- change this to normalizeElmCode probably
     NormalizeElmCode.normalize unNormalised
         |> writeResults
 
 
 writeResults : ( Dict String String, String ) -> String
 writeResults ( identifierMapping, normalizedElmCode ) =
-    normalizedElmCode ++ Debug.toString identifierMapping
+    --++ Debug.toString identifierMapping
+    normalizedElmCode
