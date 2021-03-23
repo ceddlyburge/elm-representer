@@ -1,15 +1,20 @@
 port module Main exposing (main)
 
-import Platform exposing (Program)
 import Dict as Dict exposing (Dict)
-
 import NormalizeElmCode
-        
+import Platform exposing (Program)
 
-type alias InputType = String
-type alias OutputType = String
+
+type alias InputType =
+    String
+
+
+type alias OutputType =
+    String
+
 
 port get : (InputType -> msg) -> Sub msg
+
 
 port put : OutputType -> Cmd msg
 
@@ -21,6 +26,7 @@ main =
         , update = update
         , subscriptions = subscriptions
         }
+
 
 type alias Model =
     ()
@@ -38,10 +44,12 @@ init2 : Flags -> ( Model, Cmd Msg )
 init2 _ =
     ( (), Cmd.none )
 
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Input input -> ( model, put (transform input))
+        Input input ->
+            ( model, put (transform input) )
 
 
 subscriptions : Model -> Sub Msg
@@ -53,9 +61,9 @@ transform : InputType -> OutputType
 transform unNormalised =
     -- change this to normalizeElmCode probably
     NormalizeElmCode.normalize unNormalised
-    |> writeResults
-    
-writeResults: (Dict String String, String) -> String
-writeResults (identifierMapping, normalizedElmCode) =
-        normalizedElmCode ++ (Debug.toString identifierMapping)
+        |> writeResults
 
+
+writeResults : ( Dict String String, String ) -> String
+writeResults ( identifierMapping, normalizedElmCode ) =
+    normalizedElmCode ++ Debug.toString identifierMapping
