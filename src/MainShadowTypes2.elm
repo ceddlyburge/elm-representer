@@ -1,4 +1,4 @@
-port module MainShadowTypes1 exposing (main)
+port module Main exposing (main)
 
 import Dict as Dict
 import Elm.Parser
@@ -25,9 +25,16 @@ import Platform exposing (Program)
 
 -- This solution uses a shadow type structure to that used in Elm Syntax. Having to create
 -- all the shadow types is a bit of an annoyance, as is mapping back from this shadow
--- structure to the original strucutre.
--- It does have quite a lot more code, but I think its all more obvious and simple
--- There might be scope for making things opaque or similar in a future iteration
+-- structure to the original strucutre, but otherwise I think the solution is a
+-- lot cleaner than the others.
+-- It does have quite a lot more code though, but I think its all more obvious and simple
+-- goals
+-- use an opaque type
+-- sort out the (getNormalizer (Node.value normalizedDeclaration)) problem
+--  the node.value bit might be intractable though
+-- reduce code
+--  maybe the mapping back
+-- fix very long type definition in normalizeDeclarations
 
 
 type alias Normalizer =
@@ -69,8 +76,13 @@ type History a b
     = History a Normalizer b
 
 
-normaliseElmFile : Normalizer -> File -> History File NormalizedFile
-normaliseElmFile normalizer original =
+
+-- | Initial a Normalizer b -- would this be a useful thing?
+-- | History a (History c d) b -- would this be a useful thing?
+
+
+normalizeElmFile : Normalizer -> File -> History File NormalizedFile
+normalizeElmFile normalizer original =
     let
         normalizedDeclarations =
             List.foldl
@@ -175,7 +187,19 @@ normalizeTypeAlias original normalizer =
                 normalizedName
                 original.generics
                 original.typeAnnotation
+
+        typeAlias =
+            TypeAlias
+                original.documentation
+                (toElmString normalizedName)
+                original.generics
+                original.typeAnnotation
     in
+    -- this isn't any better is it?
+    -- createHistory
+    --     original
+    --     (Node.value normalizedName)
+    --     normalized
     History
         original
         (getNormalizer (Node.value normalizedName))
@@ -186,6 +210,15 @@ normalizeTypeAlias original normalizer =
 getNormalizer : History a b -> Normalizer
 getNormalizer (History _ normalizer _) =
     normalizer
+
+
+
+-- createHistory : a -> (History _ _ ) -> b -> History a b
+-- createHistory original previousHistory normalized =
+--     History
+--         original
+--         (getNormalizer previousHistory)
+--         normalized
 
 
 normalizeString : Normalizer -> String -> History String String
@@ -309,7 +342,7 @@ transform unNormalised =
             "Failed: " ++ Debug.toString error
 
         Ok rawFile ->
-            normaliseElmFile
+            normalizeElmFile
                 (Normalizer Dict.empty 0)
                 (process init rawFile)
                 |> writeResults
