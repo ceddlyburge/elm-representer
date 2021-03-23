@@ -19,7 +19,7 @@ suite =
                     |> thenContains "type alias IDENTIFIER_1 =\nIDENTIFIER_2"
         , test "shoud normalize Name and generic type parameters of Custom Type - Type Alias'" <|
             \_ ->
-                givenElmCodeOf "type alias InputType a = Result a"
+                givenElmCodeOf "type alias InputType a = AnotherCustomType a"
                     |> whenNormalize
                     |> thenContains "type alias IDENTIFIER_1 IDENTIFIER_2 =\nIDENTIFIER_3 IDENTIFIER_2"
         , test "shoud normalize name of Tuple Type Alias'" <|

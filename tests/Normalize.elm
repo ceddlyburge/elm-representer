@@ -5,58 +5,119 @@ import Normalization
 import Test exposing (..)
 
 
+
+-- These things are imported automatically / by default, so need to take
+-- account of this during the normalization
+-- https://package.elm-lang.org/packages/elm/core/latest/
+-- import Basics exposing (..)
+-- module Basics exposing
+--   ( Int, Float
+--   , (+), (-), (*), (/), (//), (^)
+--   , toFloat, round, floor, ceiling, truncate
+--   , (==), (/=)
+--   , (<), (>), (<=), (>=), max, min, compare, Order(..)
+--   , Bool(..), not, (&&), (||), xor
+--   , (++)
+--   , modBy, remainderBy, negate, abs, clamp, sqrt, logBase, e
+--   , pi, cos, sin, tan, acos, asin, atan, atan2
+--   , degrees, radians, turns
+--   , toPolar, fromPolar
+--   , isNaN, isInfinite
+--   , identity, always, (<|), (|>), (<<), (>>), Never, never
+--   )
+-- import List exposing (List, (::))
+-- import Maybe exposing (Maybe(..)) -- Just, Nothing
+-- import Result exposing (Result(..)) -- Ok, Err
+-- import String exposing (String)
+-- import Char exposing (Char)
+-- import Tuple
+-- import Debug
+-- import Platform exposing ( Program )
+-- import Platform.Cmd as Cmd exposing ( Cmd )
+-- import Platform.Sub as Sub exposing ( Sub )
+
+
 suite : Test
 suite =
     describe "Normalization"
-        [ test "shoud ignore primitive String type" <|
-            \_ ->
-                normalize "String"
-                    |> Expect.equal "String"
-        , test "shoud ignore primitive Char type" <|
-            \_ ->
-                normalize "Char"
-                    |> Expect.equal "Char"
-        , test "shoud ignore primitive Bool type" <|
-            \_ ->
-                normalize "Bool"
-                    |> Expect.equal "Bool"
-        , test "shoud ignore primitive Int type" <|
-            \_ ->
-                normalize "Int"
-                    |> Expect.equal "Int"
-        , test "shoud ignore primitive Float type" <|
-            \_ ->
-                normalize "Float"
-                    |> Expect.equal "Float"
-        , test "shoud ignore primitive True value" <|
-            \_ ->
-                normalize "True"
-                    |> Expect.equal "True"
-        , test "shoud ignore primitive False value" <|
-            \_ ->
-                normalize "False"
-                    |> Expect.equal "False"
-        , test "shoud ignore primitive number typeclass" <|
-            \_ ->
-                normalize "number"
-                    |> Expect.equal "number"
-        , test "shoud ignore primitive appendable typeclass" <|
-            \_ ->
-                normalize "appendable"
-                    |> Expect.equal "appendable"
-        , test "shoud ignore primitive comparable typeclass" <|
-            \_ ->
-                normalize "comparable"
-                    |> Expect.equal "comparable"
-        , test "shoud ignore primitive compappend typeclass" <|
-            \_ ->
-                normalize "compappend"
-                    |> Expect.equal "compappend"
+        [ shouldIgnore "Int"
+        , shouldIgnore "Float"
+        , shouldIgnore "toFloat"
+        , shouldIgnore "round"
+        , shouldIgnore "floor"
+        , shouldIgnore "ceiling"
+        , shouldIgnore "truncate"
+        , shouldIgnore "max"
+        , shouldIgnore "min"
+        , shouldIgnore "compare"
+        , shouldIgnore "Order"
+        , shouldIgnore "GT"
+        , shouldIgnore "EQ"
+        , shouldIgnore "LT"
+        , shouldIgnore "Bool"
+        , shouldIgnore "True"
+        , shouldIgnore "False"
+        , shouldIgnore "not"
+        , shouldIgnore "xor"
+        , shouldIgnore "modBy"
+        , shouldIgnore "remainderBy"
+        , shouldIgnore "negate"
+        , shouldIgnore "abs"
+        , shouldIgnore "clamp"
+        , shouldIgnore "sqrt"
+        , shouldIgnore "logBase"
+        , shouldIgnore "e"
+        , shouldIgnore "pi"
+        , shouldIgnore "cos"
+        , shouldIgnore "sin"
+        , shouldIgnore "tan"
+        , shouldIgnore "acos"
+        , shouldIgnore "asin"
+        , shouldIgnore "atan"
+        , shouldIgnore "atan2"
+        , shouldIgnore "degrees"
+        , shouldIgnore "radians"
+        , shouldIgnore "turns"
+        , shouldIgnore "toPolar"
+        , shouldIgnore "fromPolar"
+        , shouldIgnore "isNan"
+        , shouldIgnore "isInfinite"
+        , shouldIgnore "identity"
+        , shouldIgnore "always"
+        , shouldIgnore "Never"
+        , shouldIgnore "never"
+        , shouldIgnore "List"
+        , shouldIgnore "Maybe"
+        , shouldIgnore "Just"
+        , shouldIgnore "Result"
+        , shouldIgnore "Ok"
+        , shouldIgnore "Err"
+        , shouldIgnore "String"
+        , shouldIgnore "Char"
+        , shouldIgnore "Tuple"
+        , shouldIgnore "Debug"
+        , shouldIgnore "Program"
+        , shouldIgnore "Cmd"
+        , shouldIgnore "Sub"
+
+        -- these are typeclasses, think they are part of the language rather than a default import
+        , shouldIgnore "number"
+        , shouldIgnore "appendable"
+        , shouldIgnore "comparable"
+        , shouldIgnore "compappend"
         , test "shoud be case sensitive" <|
             \_ ->
                 normalize2 "x" "X"
                     |> Expect.equal [ "IDENTIFIER_1", "IDENTIFIER_2" ]
         ]
+
+
+shouldIgnore : String -> Test
+shouldIgnore reservedWord =
+    test ("shoud ignore " ++ reservedWord) <|
+        \_ ->
+            normalize reservedWord
+                |> Expect.equal reservedWord
 
 
 normalize string =

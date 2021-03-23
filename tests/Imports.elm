@@ -9,35 +9,35 @@ suite =
     describe "Normalize"
         [ test "shoud not normalize qualified imports" <|
             \_ ->
-                givenElmCodeOf """import List
+                givenElmCodeOf """import Dict
 
-length : List.List -> Int                
-length list = List.length list"""
+length : Dict.Dict -> Int                
+length list = Dict.length list"""
                     |> whenNormalize
-                    |> thenContains """import List
-IDENTIFIER_1 : List.List -> Int
+                    |> thenContains """import Dict
+IDENTIFIER_1 : Dict.Dict -> Int
 IDENTIFIER_1 IDENTIFIER_2 =
-List.length IDENTIFIER_2"""
+Dict.length IDENTIFIER_2"""
         , test "shoud not normalize qualified aliased imports" <|
             \_ ->
-                givenElmCodeOf """import List as L
+                givenElmCodeOf """import Dict as D
 
-length : L.List -> Int                
-length list = L.length list"""
+length : D.Dict -> Int                
+length list = D.length list"""
                     |> whenNormalize
-                    |> thenContains """import List as L
-IDENTIFIER_1 : L.List -> Int
+                    |> thenContains """import Dict as D
+IDENTIFIER_1 : D.Dict -> Int
 IDENTIFIER_1 IDENTIFIER_2 =
-L.length IDENTIFIER_2"""
+D.length IDENTIFIER_2"""
         , test "shoud not normalize open imports" <|
             \_ ->
-                givenElmCodeOf """import List exposing (List, length)
+                givenElmCodeOf """import Dict exposing (Dict, length)
 
-shadowLength : List -> Int                
+shadowLength : Dict -> Int                
 shadowLength list = length list"""
                     |> whenNormalize
-                    |> thenContains """import List exposing (List, length)
-IDENTIFIER_1 : List -> Int
+                    |> thenContains """import Dict exposing (Dict, length)
+IDENTIFIER_1 : Dict -> Int
 IDENTIFIER_1 IDENTIFIER_2 =
 length IDENTIFIER_2"""
         ]

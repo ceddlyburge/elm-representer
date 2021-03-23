@@ -9,14 +9,14 @@ suite =
     describe "Normalize"
         [ test "shoud normalize operator application expressions" <|
             \_ ->
-                givenElmCodeOf "add x y =\n    x + y"
+                givenElmCodeOf "shadowAdd x y =\n    x + y"
                     |> whenNormalize
                     |> thenContains "IDENTIFIER_1 IDENTIFIER_2 IDENTIFIER_3 =\nIDENTIFIER_2 + IDENTIFIER_3"
 
         -- test functionorvalue
         , test "shoud normalize if expressions" <|
             \_ ->
-                givenElmCodeOf "max x y =\n    if x > y then x else y"
+                givenElmCodeOf "shadowMax x y =\n    if x > y then x else y"
                     |> whenNormalize
                     |> thenContains """IDENTIFIER_1 IDENTIFIER_2 IDENTIFIER_3 =
 if IDENTIFIER_2 > IDENTIFIER_3 then
@@ -40,7 +40,7 @@ IDENTIFIER_3"""
                     |> thenContains "IDENTIFIER_1 IDENTIFIER_2 =\n(IDENTIFIER_2)"
         , test "shoud normalize let expressions" <|
             \_ ->
-                givenElmCodeOf """identity x =
+                givenElmCodeOf """shadowIdentity x =
     let 
         y = x
     in
@@ -54,7 +54,7 @@ in
 IDENTIFIER_3"""
         , test "shoud normalize case expressions" <|
             \_ ->
-                givenElmCodeOf """identity x =
+                givenElmCodeOf """shadowIdentity x =
     case x of 
         1 -> 1
         _ -> x"""
@@ -67,7 +67,7 @@ _ ->
 IDENTIFIER_2"""
         , test "shoud normalize lambda expressions" <|
             \_ ->
-                givenElmCodeOf "identity =\n    \\x -> x"
+                givenElmCodeOf "shadowIdentity =\n    \\x -> x"
                     |> whenNormalize
                     |> thenContains "IDENTIFIER_1 =\n\\IDENTIFIER_2 -> IDENTIFIER_2"
         , test "shoud normalize record access expressions" <|
