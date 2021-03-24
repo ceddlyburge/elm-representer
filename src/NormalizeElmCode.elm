@@ -23,9 +23,6 @@ import Parser
 
 
 -- todo
--- do it on a lot of current solutions and check the results are ok
---  Raindrops.elm:  the typeclasses (number etc) are only reserved words in type signatures I think, so need to deal with that.
---
 -- Later: split up this file in to smaller files
 -- Later: create a build
 -- Later: dockerise
@@ -35,7 +32,8 @@ import Parser
 -- Later: do a round trip at the end of this to make sure that the normalization
 --  code is working. This will catch the potential error when a returned
 --  Normalization.State is ignored instead of being passed in to normalize
--- Later: add pull request to elm-syntax repo about the `process init` thing which is hard to work out
+-- Later: add pull request / issue to elm-syntax repo about the `process init` thing which is hard to work out
+-- Later: add pull request / issue to elm-syntax about typeclasses being classified as generic types in the syntax
 -- Later, probably never: normalize within scope (so 'a' can normalize to different values if it is defined in different scopes). This would improve the normalization, but the mapping format defined by exercism doesn't support it, so there probably isn't much point, and it would be harder to do
 
 
@@ -787,8 +785,9 @@ normalizeTypeAnnotation state typeAnnotation =
 
         TypeAnnotation.GenericType original ->
             let
+                -- interestingly type classes come through as GenericTypes in elm-syntax, presumably because they start with a lower case letter
                 ( state2, normalized ) =
-                    normalizeString state original
+                    normalizeTypeString state original
             in
             ( state2, TypeAnnotation.GenericType normalized )
 
@@ -844,18 +843,20 @@ normalizeTypeName : Normalization.State -> ( ModuleName, String ) -> ( Normaliza
 normalizeTypeName state ( originalModuleName, originalTypeName ) =
     let
         ( state2, normalizedTypeName ) =
-            normalizeString
+            normalizeTypeString
                 state
                 originalTypeName
-
-        typeName =
-            ( originalModuleName, normalizedTypeName )
     in
     if List.isEmpty originalModuleName then
-        ( state2, typeName )
+        ( state2, ( originalModuleName, normalizedTypeName ) )
 
     else
         ( state, ( originalModuleName, originalTypeName ) )
+
+
+normalizeTypeString : Normalization.State -> String -> ( Normalization.State, String )
+normalizeTypeString =
+    Normalization.normalizeType
 
 
 normalizeNodeString : Normalization.State -> Node String -> ( Normalization.State, Node String )

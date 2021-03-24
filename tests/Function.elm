@@ -21,4 +21,13 @@ identityFunction x =
                     |> thenContains """IDENTIFIER_1 : IDENTIFIER_2 -> IDENTIFIER_2
 IDENTIFIER_1 IDENTIFIER_3 =
 IDENTIFIER_3"""
+        , test "shoud ignore typeclasses in function signature" <|
+            \_ ->
+                givenElmCodeOf """identityFunction : comparable -> comparable
+identityFunction x =
+    x"""
+                    |> whenNormalize
+                    |> thenContains """IDENTIFIER_1 : comparable -> comparable
+IDENTIFIER_1 IDENTIFIER_2 =
+IDENTIFIER_2"""
         ]

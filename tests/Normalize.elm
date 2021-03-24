@@ -100,16 +100,25 @@ suite =
         , shouldIgnore "Cmd"
         , shouldIgnore "Sub"
 
-        -- these are typeclasses, think they are part of the language rather than a default import
-        , shouldIgnore "number"
-        , shouldIgnore "appendable"
-        , shouldIgnore "comparable"
-        , shouldIgnore "compappend"
+        -- these are typeclasses, think they are part of the language rather than a default import,
+        -- and can be (re)used as function / value names
+        , shouldIgnoreType "number"
+        , shouldIgnoreType "appendable"
+        , shouldIgnoreType "comparable"
+        , shouldIgnoreType "compappend"
         , test "shoud be case sensitive" <|
             \_ ->
                 normalize2 "x" "X"
                     |> Expect.equal [ "IDENTIFIER_1", "IDENTIFIER_2" ]
         ]
+
+
+shouldIgnoreType : String -> Test
+shouldIgnoreType reservedWord =
+    test ("shoud ignore " ++ reservedWord) <|
+        \_ ->
+            normalizeType reservedWord
+                |> Expect.equal reservedWord
 
 
 shouldIgnore : String -> Test
@@ -133,4 +142,12 @@ normalize2 string1 string2 =
         |> (\state ->
                 Normalization.normalize state string1
                     |> (\( state2, normalized1 ) -> normalized1 :: [ Tuple.second (Normalization.normalize state2 string2) ])
+           )
+
+
+normalizeType string =
+    Normalization.initialize []
+        |> (\state ->
+                Normalization.normalizeType state string
+                    |> Tuple.second
            )

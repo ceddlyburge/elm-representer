@@ -17,4 +17,9 @@ suite =
                 givenElmCodeOf "type InputType a = InputType a String"
                     |> whenNormalize
                     |> thenContains "type IDENTIFIER_1 IDENTIFIER_2\n=IDENTIFIER_1 IDENTIFIER_2 String"
+        , test "shoud ignore typeclass type parameters Custom Types" <|
+            \_ ->
+                givenElmCodeOf "type InputType a = InputType a number"
+                    |> whenNormalize
+                    |> thenContains "type IDENTIFIER_1 IDENTIFIER_2\n=IDENTIFIER_1 IDENTIFIER_2 number"
         ]

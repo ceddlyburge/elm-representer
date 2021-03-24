@@ -1,4 +1,4 @@
-module Normalization exposing (State, getIdentifierMapping, initialize, normalize)
+module Normalization exposing (State, getIdentifierMapping, initialize, normalize, normalizeType)
 
 import Dict as Dict exposing (Dict)
 
@@ -70,10 +70,6 @@ initialize customReservedWords =
             , ( "Program", "Program" )
             , ( "Cmd", "Cmd" )
             , ( "Sub", "Sub" )
-            , ( "number", "number" )
-            , ( "comparable", "comparable" )
-            , ( "appendable", "appendable" )
-            , ( "compappend", "compappend" )
             ]
                 ++ List.map (\s -> ( s, s )) customReservedWords
 
@@ -81,6 +77,20 @@ initialize customReservedWords =
             Dict.fromList reservedWords
     in
     State initialIdentifierMapping 1
+
+
+{-| Normalize a string that is being used to identify an Elm Type
+Handles the additional case of typeclasses, which can be
+(re)used as function and value names, so can't be part of the
+more general case solution
+-}
+normalizeType : State -> String -> ( State, String )
+normalizeType state original =
+    if List.member original [ "number", "comparable", "appendable", "compappend" ] then
+        ( state, original )
+
+    else
+        normalize state original
 
 
 normalize : State -> String -> ( State, String )

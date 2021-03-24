@@ -6,8 +6,8 @@ isLeapYear IDENTIFIER_1 =
     let
       
       
-      IDENTIFIER_2 number =
-          Basics.remainderBy number IDENTIFIER_1 == 0
+      IDENTIFIER_2 IDENTIFIER_3 =
+          Basics.remainderBy IDENTIFIER_3 IDENTIFIER_1 == 0
     in
       if IDENTIFIER_2 400 then
         True
