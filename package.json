@@ -3,15 +3,8 @@
   "version": "1.0.0",
   "description": "The Elm Representer for exercism. It 'normalizes' Elm code, mainly by standardizing identifier names",
   "main": "index.js",
-  "devDependencies": {
-    "elm": "^0.19",
-    "elm-test": "^0.19"
-  },
-  "scripts": {
-    "test": "elm-test",
-    "build": "elm make --optimize src/Main.elm --output=src/main.js",
-    "cli": "node src/cli.js"
-  },
+  "devDependencies": {},
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ceddlyburge/elm-representer.git"
