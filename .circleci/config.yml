@@ -9,9 +9,9 @@ jobs:
       - checkout
       - run:
           command: |
-          npm install elm -g
-          npm install elm-test -g
-          elm-test
+            npm install elm -g
+            npm install elm-test -g
+            elm-test
       - run:
           name: Copy tests results for storing
           command: |
