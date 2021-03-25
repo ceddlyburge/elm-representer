@@ -10,7 +10,7 @@ jobs:
       - run:
           command: |
             npm install
-            elm-test --report junit > test-results.xml
+            npx elm-test --report junit > test-results.xml
       - run:
           name: Copy tests results for storing
           command: |
