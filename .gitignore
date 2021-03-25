@@ -13,3 +13,4 @@ compiled/
 exp/
 src/main.js
 .DS_Store
+.coverage

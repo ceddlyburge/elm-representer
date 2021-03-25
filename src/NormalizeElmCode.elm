@@ -24,21 +24,42 @@ import Parser
 
 -- todo
 -- Later: split up this file in to smaller files
--- Later: create a build
 -- Later: dockerise
 -- run elm-format afterwards. the code created by elm-syntax can be a bit weird, and is more likely to change that the format that elm-format insists on/
--- Later: add code coverage
--- Later: create pull request with
+-- Later: create pull request with exercism elm-representer
 -- Later: do a round trip at the end of this to make sure that the normalization
 --  code is working. This will catch the potential error when a returned
 --  Normalization.State is ignored instead of being passed in to normalize
+-- Later: add code coverage
+--  This isn't working at the moment, I think elm coverrage doesn't work with latest version of elm-test
 -- Later: add pull request / issue to elm-syntax repo about the `process init` thing which is hard to work out
 -- Later: add pull request / issue to elm-syntax about typeclasses being classified as generic types in the syntax
 -- Later, probably never: normalize within scope (so 'a' can normalize to different values if it is defined in different scopes). This would improve the normalization, but the mapping format defined by exercism doesn't support it, so there probably isn't much point, and it would be harder to do
 
 
-normalize : String -> ( Dict String String, String )
+normalize : String -> Result String ( Dict String String, String )
 normalize original =
+    let
+        ( firstState, firstNormalization ) =
+            normalizeWithoutCheck original
+
+        ( _, secondNormalization ) =
+            normalizeWithoutCheck firstNormalization
+    in
+    if firstNormalization == secondNormalization then
+        Ok ( firstState, firstNormalization )
+
+    else
+        Err <|
+            "Inconsistency detected, which means there is a bug, please create an Issue with this output"
+                ++ "\n\nFirst normalisation\n"
+                ++ firstNormalization
+                ++ "\n\nSecond normalisation\n"
+                ++ secondNormalization
+
+
+normalizeWithoutCheck : String -> ( Dict String String, String )
+normalizeWithoutCheck original =
     case Elm.Parser.parse original of
         Err error ->
             ( Dict.empty, "Failed: " ++ Parser.deadEndsToString error )

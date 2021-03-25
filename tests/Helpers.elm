@@ -18,7 +18,7 @@ givenElmFileOf elmFile =
     elmFile
 
 
-whenNormalize : String -> ( Dict String String, String )
+whenNormalize : String -> Result String ( Dict String String, String )
 whenNormalize =
     NormalizeElmCode.normalize
 
@@ -30,22 +30,31 @@ whenNormalize =
 -- Hopefully the tradeoff is worth it
 
 
-thenContains : String -> ( Dict String String, String ) -> Expectation
+thenContains : String -> Result String ( Dict String String, String ) -> Expectation
 thenContains expected normalizationResult =
     let
-        normalized =
-            Tuple.second normalizationResult
-                -- remove added boilerplate
-                |> String.replace boilerplate ""
-                -- keep line breaks, but compress all other multiple whitespace to a single whitespace
-                |> String.lines
-                |> List.map String.Extra.clean
-                |> List.filter (String.isEmpty >> not)
-                -- remove blank lines
-                |> String.join "\n"
-                |> String.trim
+        cleaner =
+            \( _, normalized ) ->
+                normalized
+                    -- remove added boilerplate
+                    |> String.replace boilerplate ""
+                    -- keep line breaks, but compress all other multiple whitespace to a single whitespace
+                    |> String.lines
+                    |> List.map String.Extra.clean
+                    -- remove blank lines
+                    |> List.filter (String.isEmpty >> not)
+                    |> String.join "\n"
+                    |> String.trim
+
+        normalizedAndCleanedResult =
+            Result.map cleaner normalizationResult
     in
-    Expect.Extra.match (Expect.Extra.stringPattern expected) normalized
+    case normalizedAndCleanedResult of
+        Ok normalizedAndCleanedCode ->
+            Expect.Extra.match (Expect.Extra.stringPattern expected) normalizedAndCleanedCode
+
+        Err message ->
+            Expect.fail message
 
 
 boilerplate : String

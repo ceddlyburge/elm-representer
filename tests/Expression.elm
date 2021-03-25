@@ -11,33 +11,31 @@ suite =
             \_ ->
                 givenElmCodeOf "shadowAdd x y =\n    x + y"
                     |> whenNormalize
-                    |> thenContains "IDENTIFIER_1 IDENTIFIER_2 IDENTIFIER_3 =\nIDENTIFIER_2 + IDENTIFIER_3"
-
-        -- test functionorvalue
+                    |> thenContains "identifier_1 identifier_2 identifier_3 =\nidentifier_2 + identifier_3"
         , test "shoud normalize if expressions" <|
             \_ ->
                 givenElmCodeOf "shadowMax x y =\n    if x > y then x else y"
                     |> whenNormalize
-                    |> thenContains """IDENTIFIER_1 IDENTIFIER_2 IDENTIFIER_3 =
-if IDENTIFIER_2 > IDENTIFIER_3 then
-IDENTIFIER_2
+                    |> thenContains """identifier_1 identifier_2 identifier_3 =
+if identifier_2 > identifier_3 then
+identifier_2
 else
-IDENTIFIER_3"""
+identifier_3"""
         , test "shoud normalize tuple expressions" <|
             \_ ->
                 givenElmCodeOf "tuple x y =\n    (x, y)"
                     |> whenNormalize
-                    |> thenContains "IDENTIFIER_1 IDENTIFIER_2 IDENTIFIER_3 =\n(IDENTIFIER_2, IDENTIFIER_3)"
+                    |> thenContains "identifier_1 identifier_2 identifier_3 =\n(identifier_2, identifier_3)"
         , test "shoud normalize list expressions" <|
             \_ ->
                 givenElmCodeOf "list x y =\n    [x, y]"
                     |> whenNormalize
-                    |> thenContains "IDENTIFIER_1 IDENTIFIER_2 IDENTIFIER_3 =\n[IDENTIFIER_2, IDENTIFIER_3]"
+                    |> thenContains "identifier_1 identifier_2 identifier_3 =\n[identifier_2, identifier_3]"
         , test "shoud normalize paranthesized expressions" <|
             \_ ->
                 givenElmCodeOf "paranthesized x =\n    (x)"
                     |> whenNormalize
-                    |> thenContains "IDENTIFIER_1 IDENTIFIER_2 =\n(IDENTIFIER_2)"
+                    |> thenContains "identifier_1 identifier_2 =\n(identifier_2)"
         , test "shoud normalize let expressions" <|
             \_ ->
                 givenElmCodeOf """shadowIdentity x =
@@ -46,12 +44,12 @@ IDENTIFIER_3"""
     in
         y"""
                     |> whenNormalize
-                    |> thenContains """IDENTIFIER_1 IDENTIFIER_2 =
+                    |> thenContains """identifier_1 identifier_2 =
 let
-IDENTIFIER_3 =
-IDENTIFIER_2
+identifier_3 =
+identifier_2
 in
-IDENTIFIER_3"""
+identifier_3"""
         , test "shoud normalize case expressions" <|
             \_ ->
                 givenElmCodeOf """shadowIdentity x =
@@ -59,35 +57,35 @@ IDENTIFIER_3"""
         1 -> 1
         _ -> x"""
                     |> whenNormalize
-                    |> thenContains """IDENTIFIER_1 IDENTIFIER_2 =
-case IDENTIFIER_2 of
+                    |> thenContains """identifier_1 identifier_2 =
+case identifier_2 of
 1 ->
 1
 _ ->
-IDENTIFIER_2"""
+identifier_2"""
         , test "shoud normalize lambda expressions" <|
             \_ ->
                 givenElmCodeOf "shadowIdentity =\n    \\x -> x"
                     |> whenNormalize
-                    |> thenContains "IDENTIFIER_1 =\n\\IDENTIFIER_2 -> IDENTIFIER_2"
+                    |> thenContains "identifier_1 =\n\\identifier_2 -> identifier_2"
         , test "shoud normalize record access expressions" <|
             \_ ->
                 givenElmCodeOf "getBlah x =\n    x.y"
                     |> whenNormalize
-                    |> thenContains "IDENTIFIER_1 IDENTIFIER_2 =\nIDENTIFIER_2.IDENTIFIER_3"
+                    |> thenContains "identifier_1 identifier_2 =\nidentifier_2.identifier_3"
         , test "shoud normalize record access function expressions" <|
             \_ ->
                 givenElmCodeOf "getBlah x =\n    .y x"
                     |> whenNormalize
-                    |> thenContains "IDENTIFIER_1 IDENTIFIER_2 =\n.IDENTIFIER_3 IDENTIFIER_2"
+                    |> thenContains "identifier_1 identifier_2 =\n.identifier_3 identifier_2"
         , test "shoud normalize record expressions" <|
             \_ ->
                 givenElmCodeOf "fromFirstName =\n    { name = firstName }"
                     |> whenNormalize
-                    |> thenContains "IDENTIFIER_1 =\n{IDENTIFIER_2 = IDENTIFIER_3}"
+                    |> thenContains "identifier_1 =\n{identifier_2 = identifier_3}"
         , test "shoud normalize record updateexpressions" <|
             \_ ->
                 givenElmCodeOf "updateName person newName =\n    { person | name = newName }"
                     |> whenNormalize
-                    |> thenContains "IDENTIFIER_1 IDENTIFIER_2 IDENTIFIER_3 =\n{ IDENTIFIER_2 | IDENTIFIER_4 = IDENTIFIER_3 }"
+                    |> thenContains "identifier_1 identifier_2 identifier_3 =\n{ identifier_2 | identifier_4 = identifier_3 }"
         ]

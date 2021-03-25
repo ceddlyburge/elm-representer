@@ -11,27 +11,27 @@ suite =
             \_ ->
                 givenElmCodeOf "type alias FirstName = Name"
                     |> whenNormalize
-                    |> thenContains "type alias IDENTIFIER_1 =\nIDENTIFIER_2"
+                    |> thenContains "type alias Identifier_1 =\nIdentifier_2"
         , test "shoud normalize Name and generic type parameters of Custom Type - Type Alias'" <|
             \_ ->
                 givenElmCodeOf "type alias InputType a = AnotherCustomType a"
                     |> whenNormalize
-                    |> thenContains "type alias IDENTIFIER_1 IDENTIFIER_2 =\nIDENTIFIER_3 IDENTIFIER_2"
+                    |> thenContains "type alias Identifier_1 identifier_2 =\nIdentifier_3 identifier_2"
         , test "shoud normalize name of Tuple Type Alias'" <|
             \_ ->
                 givenElmCodeOf "type alias InputType = (String, Int)"
                     |> whenNormalize
-                    |> thenContains "type alias IDENTIFIER_1 =\n(String, Int)"
+                    |> thenContains "type alias Identifier_1 =\n(String, Int)"
         , test "shoud normalize parameter types of Tuple Type Alias'" <|
             \_ ->
                 givenElmCodeOf "type alias InputType = (Name, Name)"
                     |> whenNormalize
-                    |> thenContains "type alias IDENTIFIER_1 =\n(IDENTIFIER_2, IDENTIFIER_2)"
+                    |> thenContains "type alias Identifier_1 =\n(Identifier_2, Identifier_2)"
         , test "shoud normalize types of Function Type Alias'" <|
             \_ ->
                 givenElmCodeOf "type alias InputType = Name -> Name"
                     |> whenNormalize
-                    |> thenContains "type alias IDENTIFIER_1 =\nIDENTIFIER_2 -> IDENTIFIER_2"
+                    |> thenContains "type alias Identifier_1 =\nIdentifier_2 -> Identifier_2"
         , test "shoud normalize Name and Parameters of Record Types" <|
             \_ ->
                 givenElmCodeOf """
@@ -41,7 +41,7 @@ type alias Person =
     }
 """
                     |> whenNormalize
-                    |> thenContains "type alias IDENTIFIER_1 =\n{IDENTIFIER_2 : IDENTIFIER_3, IDENTIFIER_4 : Int}"
+                    |> thenContains "type alias Identifier_1 =\n{identifier_2 : Identifier_3, identifier_4 : Int}"
         , test "shoud normalize Name and Parameters of Extensible Record Types" <|
             \_ ->
                 givenElmCodeOf """
@@ -51,22 +51,22 @@ type alias Person a =
     }
 """
                     |> whenNormalize
-                    |> thenContains "type alias IDENTIFIER_1 IDENTIFIER_2 =\n{ IDENTIFIER_2 | IDENTIFIER_3 : String }"
+                    |> thenContains "type alias Identifier_1 identifier_2 =\n{ identifier_2 | identifier_3 : String }"
         , test "shoud ignore typeclass Type of Custom Type - Type Alias'" <|
             \_ ->
                 givenElmCodeOf "type alias FirstName = appendable"
                     |> whenNormalize
-                    |> thenContains "type alias IDENTIFIER_1 =\nappendable"
+                    |> thenContains "type alias Identifier_1 =\nappendable"
         , test "shoud ignore typeclass types of Tuple Type Alias'" <|
             \_ ->
                 givenElmCodeOf "type alias InputType = (number, compappend)"
                     |> whenNormalize
-                    |> thenContains "type alias IDENTIFIER_1 =\n(number, compappend)"
+                    |> thenContains "type alias Identifier_1 =\n(number, compappend)"
         , test "shoud ignore typeclass types of Function Type Alias'" <|
             \_ ->
                 givenElmCodeOf "type alias InputType = number -> number"
                     |> whenNormalize
-                    |> thenContains "type alias IDENTIFIER_1 =\nnumber -> number"
+                    |> thenContains "type alias Identifier_1 =\nnumber -> number"
         , test "shoud ignore typeclass types of Record Types" <|
             \_ ->
                 givenElmCodeOf """
@@ -75,7 +75,7 @@ type alias Person =
     }
 """
                     |> whenNormalize
-                    |> thenContains "type alias IDENTIFIER_1 =\n{IDENTIFIER_2 : comparable}"
+                    |> thenContains "type alias Identifier_1 =\n{identifier_2 : comparable}"
         , test "shoud ignore typeclass types of Extensible Record Types" <|
             \_ ->
                 givenElmCodeOf """
@@ -85,5 +85,5 @@ type alias Person a =
     }
 """
                     |> whenNormalize
-                    |> thenContains "type alias IDENTIFIER_1 IDENTIFIER_2 =\n{ IDENTIFIER_2 | IDENTIFIER_3 : appendable }"
+                    |> thenContains "type alias Identifier_1 identifier_2 =\n{ identifier_2 | identifier_3 : appendable }"
         ]

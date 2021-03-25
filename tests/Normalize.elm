@@ -109,7 +109,7 @@ suite =
         , test "shoud be case sensitive" <|
             \_ ->
                 normalize2 "x" "X"
-                    |> Expect.equal [ "IDENTIFIER_1", "IDENTIFIER_2" ]
+                    |> Expect.equal [ "identifier_1", "Identifier_2" ]
         ]
 
 

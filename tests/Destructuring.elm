@@ -11,5 +11,5 @@ suite =
             \_ ->
                 givenElmCodeOf "{name, age} = person"
                     |> whenNormalize
-                    |> thenContains "{IDENTIFIER_1, IDENTIFIER_2} =\nIDENTIFIER_3"
+                    |> thenContains "{identifier_1, identifier_2} =\nidentifier_3"
         ]

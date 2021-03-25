@@ -109,13 +109,41 @@ normalize state original =
         Nothing ->
             let
                 newNormalizedIdentifier =
-                    "IDENTIFIER_" ++ String.fromInt uniqueInt
+                    normalizeMaintainCase uniqueInt original
             in
             ( State
                 (Dict.insert original newNormalizedIdentifier identifierMapping)
                 (uniqueInt + 1)
             , newNormalizedIdentifier
             )
+
+
+{-| Elm is strict about the case of the first letters of identifiers,
+so we should maintain it.
+-}
+normalizeMaintainCase : Int -> String -> String
+normalizeMaintainCase uniqueInt original =
+    if firstLetterIsLowerCase original then
+        "identifier_" ++ String.fromInt uniqueInt
+
+    else
+        "Identifier_" ++ String.fromInt uniqueInt
+
+
+{-| The "." is for record access function expressions, which always
+start with a '.' and are always lower case after that. Due to a nuance
+in Elm-Syntax, we don't need to maintain the '.' (Elm-Syntax adds it
+when writing back out to a string)
+-}
+firstLetterIsLowerCase : String -> Bool
+firstLetterIsLowerCase original =
+    let
+        firstCharacter =
+            String.left 1 original
+    in
+    (String.toLower firstCharacter == firstCharacter)
+        || firstCharacter
+        == "."
 
 
 getIdentifierMapping : State -> Dict String String

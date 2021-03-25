@@ -11,23 +11,23 @@ suite =
             \_ ->
                 givenElmCodeOf "identityFunction x =\n    x"
                     |> whenNormalize
-                    |> thenContains "IDENTIFIER_1 IDENTIFIER_2 =\nIDENTIFIER_2"
+                    |> thenContains "identifier_1 identifier_2 =\nidentifier_2"
         , test "shoud normalize function signature" <|
             \_ ->
                 givenElmCodeOf """identityFunction : a -> a
 identityFunction x =
     x"""
                     |> whenNormalize
-                    |> thenContains """IDENTIFIER_1 : IDENTIFIER_2 -> IDENTIFIER_2
-IDENTIFIER_1 IDENTIFIER_3 =
-IDENTIFIER_3"""
+                    |> thenContains """identifier_1 : identifier_2 -> identifier_2
+identifier_1 identifier_3 =
+identifier_3"""
         , test "shoud ignore typeclasses in function signature" <|
             \_ ->
                 givenElmCodeOf """identityFunction : comparable -> comparable
 identityFunction x =
     x"""
                     |> whenNormalize
-                    |> thenContains """IDENTIFIER_1 : comparable -> comparable
-IDENTIFIER_1 IDENTIFIER_2 =
-IDENTIFIER_2"""
+                    |> thenContains """identifier_1 : comparable -> comparable
+identifier_1 identifier_2 =
+identifier_2"""
         ]

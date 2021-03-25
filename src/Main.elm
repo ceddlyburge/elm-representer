@@ -63,7 +63,12 @@ transform unNormalised =
         |> writeResults
 
 
-writeResults : ( Dict String String, String ) -> String
-writeResults ( identifierMapping, normalizedElmCode ) =
-    --++ Debug.toString identifierMapping
-    normalizedElmCode
+writeResults : Result String ( Dict String String, String ) -> String
+writeResults results =
+    case results of
+        Ok ( identifierMapping, normalizedElmCode ) ->
+            --++ Debug.toString identifierMapping
+            normalizedElmCode
+
+        Err message ->
+            message
