@@ -9,9 +9,8 @@ jobs:
       - checkout
       - run:
           command: |
-            npm install elm -g
-            npm install elm-test -g
-            elm-test
+            npm install
+            elm-test --report junit > test-results.xml
       - run:
           name: Copy tests results for storing
           command: |
