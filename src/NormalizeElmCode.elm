@@ -25,11 +25,8 @@ import Parser
 -- todo
 -- Later: split up this file in to smaller files
 -- Later: dockerise
--- run elm-format afterwards. the code created by elm-syntax can be a bit weird, and is more likely to change that the format that elm-format insists on/
+-- run elm-format afterwards. the code created by elm-syntax can be a bit weird, and is more likely to change that the format that elm-format insists on. Although apparently elm-syntax-dsl might do a similar thing and be easier to integrate, so investigate that
 -- Later: create pull request with exercism elm-representer
--- Later: do a round trip at the end of this to make sure that the normalization
---  code is working. This will catch the potential error when a returned
---  Normalization.State is ignored instead of being passed in to normalize
 -- Later: add code coverage
 --  This isn't working at the moment, I think elm coverrage doesn't work with latest version of elm-test
 -- Later: add pull request / issue to elm-syntax repo about the `process init` thing which is hard to work out

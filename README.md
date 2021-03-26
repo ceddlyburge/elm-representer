@@ -1,5 +1,7 @@
 # Elm Representer
 
+[![<ORG_NAME>](https://circleci.com/gh/ceddlyburge/elm-representer.svg?style=svg)](<LINK>)
+
 This outputs a normalized representation of Elm Code, to make automated analysis easier within Exercism.
 
 Thanks to [Elm Platform Worker Example](https://github.com/jxxcarlson/elm-platform-worker-example) for the initial template.
