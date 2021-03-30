@@ -18,14 +18,17 @@ import Elm.Syntax.TypeAlias exposing (TypeAlias)
 import Elm.Syntax.TypeAnnotation as TypeAnnotation exposing (TypeAnnotation)
 import Elm.Writer exposing (write, writeFile)
 import Normalization
+import NormalizeElmCodeHelpers exposing (..)
 import Parser
 
 
 
 -- todo
+-- Run the example files as tests, just to ensure that they succeed (don't worry about the created text). This will ensure that the created code is valid and can be re parsed, and if we ever find problems we can add them to the examples.
 -- Later: split up this file in to smaller files
 -- Later: dockerise
--- run elm-format afterwards. the code created by elm-syntax can be a bit weird, and is more likely to change that the format that elm-format insists on. Although apparently elm-syntax-dsl might do a similar thing and be easier to integrate, so investigate that
+--  run elm-format afterwards. the code created by elm-syntax can be a bit weird, and is more likely to change that the format that elm-format insists on. Although apparently elm-syntax-dsl might do a similar thing and be easier to integrate, so investigate that
+-- Later: Think about using elm-syntax-dsl instead of elm-syntax. It uses the same types, but without the `Node a` type stuff, which should make things simpler and result in less code. I have looked at the code though, and in now I'm not sure it will help, as it just re exposes the elm-syntax types, instead of redefining similar types but wihtout the Node's
 -- Later: create pull request with exercism elm-representer
 -- Later: add code coverage
 --  This isn't working at the moment, I think elm coverrage doesn't work with latest version of elm-test
@@ -872,101 +875,84 @@ normalizeTypeName state ( originalModuleName, originalTypeName ) =
         ( state, ( originalModuleName, originalTypeName ) )
 
 
-normalizeTypeString : Normalization.State -> String -> ( Normalization.State, String )
-normalizeTypeString =
-    Normalization.normalizeType
 
-
-normalizeNodeString : Normalization.State -> Node String -> ( Normalization.State, Node String )
-normalizeNodeString state original =
-    normalizeNode normalizeString state original
-
-
-normalizeString : Normalization.State -> String -> ( Normalization.State, String )
-normalizeString =
-    Normalization.normalize
-
-
-normalizeNodeStrings : Normalization.State -> List (Node String) -> ( Normalization.State, List (Node String) )
-normalizeNodeStrings state original =
-    normalizeNodes normalizeNodeString state original
-
-
-normalizeMaybe :
-    (Normalization.State -> a -> ( Normalization.State, a ))
-    -> Normalization.State
-    -> Maybe a
-    -> ( Normalization.State, Maybe a )
-normalizeMaybe normalizer state maybeOriginal =
-    Maybe.map
-        (normalizer state)
-        maybeOriginal
-        |> Maybe.map (\( state2, signature ) -> ( state2, Just signature ))
-        |> Maybe.withDefault ( state, Nothing )
-
-
-normalizeNode :
-    (Normalization.State -> a -> ( Normalization.State, a ))
-    -> Normalization.State
-    -> Node a
-    -> ( Normalization.State, Node a )
-normalizeNode normalizer state original =
-    let
-        normalized =
-            Node.map
-                (normalizer state)
-                original
-    in
-    ( Node.value normalized |> Tuple.first
-    , Node.map Tuple.second normalized
-    )
-
-
-normalizeNodes :
-    (Normalization.State -> Node a -> ( Normalization.State, Node a ))
-    -> Normalization.State
-    -> List (Node a)
-    -> ( Normalization.State, List (Node a) )
-normalizeNodes normalizer state original =
-    List.foldl
-        (normalizeAccumulateNode normalizer)
-        ( state, [] )
-        original
-
-
-normalizeAccumulateNode :
-    (Normalization.State -> Node a -> ( Normalization.State, Node a ))
-    -> Node a
-    -> ( Normalization.State, List (Node a) )
-    -> ( Normalization.State, List (Node a) )
-normalizeAccumulateNode normalizer original ( state, normalizedNodes ) =
-    let
-        ( nextState, normalized ) =
-            normalizer state original
-    in
-    ( nextState, normalizedNodes ++ [ normalized ] )
-
-
-normalizeList :
-    (Normalization.State -> a -> ( Normalization.State, a ))
-    -> Normalization.State
-    -> List a
-    -> ( Normalization.State, List a )
-normalizeList normalizer state original =
-    List.foldl
-        (normalizeAccumulateListItem normalizer)
-        ( state, [] )
-        original
-
-
-normalizeAccumulateListItem :
-    (Normalization.State -> a -> ( Normalization.State, a ))
-    -> a
-    -> ( Normalization.State, List a )
-    -> ( Normalization.State, List a )
-normalizeAccumulateListItem normalizer original ( state, normalizedList ) =
-    let
-        ( nextState, normalized ) =
-            normalizer state original
-    in
-    ( nextState, normalizedList ++ [ normalized ] )
+-- normalizeTypeString : Normalization.State -> String -> ( Normalization.State, String )
+-- normalizeTypeString =
+--     Normalization.normalizeType
+-- normalizeNodeString : Normalization.State -> Node String -> ( Normalization.State, Node String )
+-- normalizeNodeString state original =
+--     normalizeNode normalizeString state original
+-- normalizeString : Normalization.State -> String -> ( Normalization.State, String )
+-- normalizeString =
+--     Normalization.normalize
+-- normalizeNodeStrings : Normalization.State -> List (Node String) -> ( Normalization.State, List (Node String) )
+-- normalizeNodeStrings state original =
+--     normalizeNodes normalizeNodeString state original
+-- normalizeMaybe :
+--     (Normalization.State -> a -> ( Normalization.State, a ))
+--     -> Normalization.State
+--     -> Maybe a
+--     -> ( Normalization.State, Maybe a )
+-- normalizeMaybe normalizer state maybeOriginal =
+--     Maybe.map
+--         (normalizer state)
+--         maybeOriginal
+--         |> Maybe.map (\( state2, signature ) -> ( state2, Just signature ))
+--         |> Maybe.withDefault ( state, Nothing )
+-- normalizeNode :
+--     (Normalization.State -> a -> ( Normalization.State, a ))
+--     -> Normalization.State
+--     -> Node a
+--     -> ( Normalization.State, Node a )
+-- normalizeNode normalizer state original =
+--     let
+--         normalized =
+--             Node.map
+--                 (normalizer state)
+--                 original
+--     in
+--     ( Node.value normalized |> Tuple.first
+--     , Node.map Tuple.second normalized
+--     )
+-- normalizeNodes :
+--     (Normalization.State -> Node a -> ( Normalization.State, Node a ))
+--     -> Normalization.State
+--     -> List (Node a)
+--     -> ( Normalization.State, List (Node a) )
+-- normalizeNodes normalizer state original =
+--     List.foldl
+--         (normalizeAccumulateNode normalizer)
+--         ( state, [] )
+--         original
+-- normalizeAccumulateNode :
+--     (Normalization.State -> Node a -> ( Normalization.State, Node a ))
+--     -> Node a
+--     -> ( Normalization.State, List (Node a) )
+--     -> ( Normalization.State, List (Node a) )
+-- normalizeAccumulateNode normalizer original ( state, normalizedNodes ) =
+--     let
+--         ( nextState, normalized ) =
+--             normalizer state original
+--     in
+--     ( nextState, normalizedNodes ++ [ normalized ] )
+-- normalizeList :
+--     (Normalization.State -> a -> ( Normalization.State, a ))
+--     -> Normalization.State
+--     -> List a
+--     -> ( Normalization.State, List a )
+-- normalizeList normalizer state original =
+--     List.foldl
+--         (normalizeAccumulateListItem normalizer)
+--         ( state, [] )
+--         original
+-- normalizeAccumulateListItem :
+--     (Normalization.State -> a -> ( Normalization.State, a ))
+--     -> a
+--     -> ( Normalization.State, List a )
+--     -> ( Normalization.State, List a )
+-- normalizeAccumulateListItem normalizer original ( state, normalizedList ) =
+--     let
+--         ( nextState, normalized ) =
+--             normalizer state original
+--     in
+--     ( nextState, normalizedList ++ [ normalized ] )
