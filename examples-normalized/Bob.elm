@@ -1,40 +1,40 @@
 module Bob exposing (hey)
 import Regex  exposing (Regex)
-type IDENTIFIER_1 IDENTIFIER_2 IDENTIFIER_3
-=IDENTIFIER_1 IDENTIFIER_2 IDENTIFIER_3
-type alias IDENTIFIER_4 IDENTIFIER_2 IDENTIFIER_3 =
-    IDENTIFIER_1 IDENTIFIER_2 IDENTIFIER_3
-type alias IDENTIFIER_5  =
-    {IDENTIFIER_6 : String, IDENTIFIER_7 : Int}
+type Identifier_1 identifier_2 identifier_3
+    =Identifier_1 identifier_2 identifier_3
+type alias Identifier_4 identifier_2 identifier_3 =
+    Identifier_1 identifier_2 identifier_3
+type alias Identifier_5  =
+    {identifier_6 : String, identifier_7 : Int}
 
 hey : String -> String
-hey IDENTIFIER_8 =
-    if IDENTIFIER_9 IDENTIFIER_8 && IDENTIFIER_10 IDENTIFIER_8 then
+hey identifier_8 =
+    if identifier_9 identifier_8 && identifier_10 identifier_8 then
       "Calm down, I know what I'm doing!"
     else
-      if IDENTIFIER_9 IDENTIFIER_8 then
+      if identifier_9 identifier_8 then
         "Whoa, chill out!"
       else
-        if IDENTIFIER_10 IDENTIFIER_8 then
+        if identifier_10 identifier_8 then
           "Sure."
         else
-          if IDENTIFIER_11 IDENTIFIER_8 then
+          if identifier_11 identifier_8 then
             "Fine. Be that way!"
           else
             "Whatever."
 
-IDENTIFIER_9 : String -> Bool
-IDENTIFIER_9 IDENTIFIER_8 =
-    IDENTIFIER_8 == String.toUpper IDENTIFIER_8 && IDENTIFIER_12 IDENTIFIER_8
+identifier_9 : String -> Bool
+identifier_9 identifier_8 =
+    identifier_8 == String.toUpper identifier_8 && identifier_12 identifier_8
 
-IDENTIFIER_10 : String -> Bool
-IDENTIFIER_10 IDENTIFIER_8 =
-    IDENTIFIER_8 |> String.trim |> String.endsWith "?"
+identifier_10 : String -> Bool
+identifier_10 identifier_8 =
+    identifier_8 |> String.trim |> String.endsWith "?"
 
-IDENTIFIER_11 : String -> Bool
-IDENTIFIER_11 IDENTIFIER_8 =
-    String.trim IDENTIFIER_8 == ""
+identifier_11 : String -> Bool
+identifier_11 identifier_8 =
+    String.trim identifier_8 == ""
 
-IDENTIFIER_12 : String -> Bool
-IDENTIFIER_12 IDENTIFIER_8 =
-    String.any Char.isAlpha IDENTIFIER_8
+identifier_12 : String -> Bool
+identifier_12 identifier_8 =
+    String.any Char.isAlpha identifier_8

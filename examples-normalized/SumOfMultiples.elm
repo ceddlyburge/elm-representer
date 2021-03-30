@@ -2,10 +2,10 @@ module SumOfMultiples exposing (sumOfMultiples)
 
 
 sumOfMultiples : List Int -> (Int -> Int)
-sumOfMultiples IDENTIFIER_1 IDENTIFIER_2 =
-    List.range 1 (IDENTIFIER_2 - 1) |> List.filter (IDENTIFIER_3 IDENTIFIER_1) |> List.sum
+sumOfMultiples identifier_1 identifier_2 =
+    List.range 1 (identifier_2 - 1) |> List.filter (identifier_3 identifier_1) |> List.sum
 
-IDENTIFIER_3 : List Int -> (Int -> Bool)
-IDENTIFIER_3 IDENTIFIER_4 IDENTIFIER_5 =
-    List.any (\IDENTIFIER_6 -> IDENTIFIER_5 % IDENTIFIER_6 == 0)
-     IDENTIFIER_4
+identifier_3 : List Int -> (Int -> Bool)
+identifier_3 identifier_4 identifier_5 =
+    List.any (\identifier_6 -> identifier_5 % identifier_6 == 0)
+     identifier_4

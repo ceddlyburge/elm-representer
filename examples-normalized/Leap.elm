@@ -2,20 +2,20 @@ module Leap exposing (isLeapYear)
 
 
 isLeapYear : Int -> Bool
-isLeapYear IDENTIFIER_1 =
+isLeapYear identifier_1 =
     let
       
       
-      IDENTIFIER_2 IDENTIFIER_3 =
-          Basics.remainderBy IDENTIFIER_3 IDENTIFIER_1 == 0
+      identifier_2 identifier_3 =
+          Basics.remainderBy identifier_3 identifier_1 == 0
     in
-      if IDENTIFIER_2 400 then
+      if identifier_2 400 then
         True
       else
-        if IDENTIFIER_2 100 then
+        if identifier_2 100 then
           False
         else
-          if IDENTIFIER_2 4 then
+          if identifier_2 4 then
             True
           else
             False
