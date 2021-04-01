@@ -1,6 +1,6 @@
 port module Main exposing (main)
 
-import Dict as Dict exposing (Dict)
+import Dict exposing (Dict)
 import NormalizeElmCode
 import Platform exposing (Program)
 
