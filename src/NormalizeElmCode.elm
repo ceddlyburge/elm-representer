@@ -9,16 +9,14 @@ import Elm.Syntax.Expression exposing (..)
 import Elm.Syntax.File exposing (File)
 import Elm.Syntax.Import exposing (Import)
 import Elm.Syntax.Module as Module
-import Elm.Syntax.ModuleName exposing (ModuleName)
 import Elm.Syntax.Node as Node exposing (Node)
 import Elm.Syntax.Pattern exposing (Pattern(..))
 import Elm.Syntax.Signature exposing (Signature)
 import Elm.Syntax.Type exposing (Type, ValueConstructor)
-import Elm.Syntax.TypeAlias exposing (TypeAlias)
-import Elm.Syntax.TypeAnnotation as TypeAnnotation exposing (TypeAnnotation)
 import Elm.Writer exposing (write, writeFile)
 import Normalization
 import NormalizeElmCodeHelpers exposing (..)
+import NormalizeTypeAlias exposing (..)
 import NormalizeTypeAnnotation exposing (..)
 import Parser
 
@@ -718,31 +716,3 @@ normalizeValueConstructor state original =
                 normalizedArguments
     in
     ( state3, normalizedValueConstructor )
-
-
-normalizeTypeAlias : Normalization.State -> TypeAlias -> ( Normalization.State, TypeAlias )
-normalizeTypeAlias state original =
-    let
-        ( state2, normalizedName ) =
-            normalizeNodeString
-                state
-                original.name
-
-        ( state3, normalizedGenerics ) =
-            normalizeNodeStrings
-                state2
-                original.generics
-
-        ( state4, normalizedTypeAnnotation ) =
-            normalizeNodeTypeAnnotation
-                state3
-                original.typeAnnotation
-
-        typeAlias =
-            TypeAlias
-                Maybe.Nothing
-                normalizedName
-                normalizedGenerics
-                normalizedTypeAnnotation
-    in
-    ( state4, typeAlias )

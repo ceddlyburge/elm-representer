@@ -1,10 +1,7 @@
 module NormalizeTypeAnnotation exposing (normalizeNodeTypeAnnotation, normalizeNodeTypeAnnotations, normalizeTypeAnnotation)
 
-import Elm.Syntax.Exposing exposing (Exposing(..), TopLevelExpose(..))
-import Elm.Syntax.Expression exposing (..)
 import Elm.Syntax.ModuleName exposing (ModuleName)
 import Elm.Syntax.Node exposing (Node)
-import Elm.Syntax.Pattern exposing (Pattern(..))
 import Elm.Syntax.TypeAnnotation as TypeAnnotation exposing (TypeAnnotation)
 import Normalization
 import NormalizeElmCodeHelpers exposing (..)
