@@ -31,7 +31,7 @@ node src/cli.js "$(cat bob.elm)" > bob-normalized.elm
 
 To normalize all the example files in this repo
 
-```
+```bash
 sh normalize-examples.sh
 ```
 
