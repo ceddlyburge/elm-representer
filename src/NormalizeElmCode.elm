@@ -13,6 +13,7 @@ import Elm.Syntax.Node as Node exposing (Node)
 import Elm.Syntax.Pattern exposing (Pattern(..))
 import Elm.Writer exposing (write, writeFile)
 import Normalization
+import NormalizeDeclaration exposing (..)
 import NormalizeElmCodeHelpers exposing (..)
 import NormalizeExpression exposing (..)
 import NormalizePattern exposing (..)
