@@ -3,9 +3,9 @@
 var Elm = require('./main').Elm;
 var main = Elm.Main.init();
 
-// Get data from the command line
-var args = process.argv.slice(2);
-var input = args[0]
+// Get data from stdin
+var fs = require("fs");
+var input = fs.readFileSync(process.stdin.fd, "utf-8");
 //console.log("\n   Input: ", input)
 
 // Send data to the worker
