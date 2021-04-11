@@ -26,7 +26,7 @@ sh make.sh -d
 To normalise bob.elm and save results to bob-normalized.elm
 
 ```bash
-node src/cli.js "$(cat bob.elm)" > bob-normalized.elm
+cat bob.elm | node src/cli.js > bob-normalized.elm
 ```
 
 To normalize all the example files in this repo
