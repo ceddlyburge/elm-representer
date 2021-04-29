@@ -3,12 +3,9 @@ module NormalizeElmCode exposing (normalize)
 import Dict as Dict exposing (Dict)
 import Elm.Parser
 import Elm.Processing exposing (init, process)
-import Elm.Syntax.Exposing exposing (Exposing(..), TopLevelExpose(..))
-import Elm.Syntax.Expression exposing (..)
-import Elm.Syntax.Pattern exposing (Pattern(..))
 import Elm.Writer exposing (write, writeFile)
 import Normalization
-import NormalizeElmFile exposing (..)
+import NormalizeElmFile exposing (normalizeElmFile)
 import Parser
 
 
@@ -17,7 +14,7 @@ import Parser
 -- Run the example files as tests, just to ensure that they succeed (don't worry about the created text). This will ensure that the created code is valid and can be re parsed, and if we ever find problems we can add them to the examples.
 -- Later: dockerise
 --  run elm-format afterwards. the code created by elm-syntax can be a bit weird, and is more likely to change that the format that elm-format insists on. Although apparently elm-syntax-dsl might do a similar thing and be easier to integrate, so investigate that
--- Later: Think about using elm-syntax-dsl instead of elm-syntax. It uses the same types, but without the `Node a` type stuff, which should make things simpler and result in less code. I have looked at the code though, and in now I'm not sure it will help, as it just re exposes the elm-syntax types, instead of redefining similar types but wihtout the Node's
+-- Later: Think about using elm-syntax-dsl instead of elm-syntax. It uses the same types, but without the `Node a` type stuff, which should make things simpler and result in less code. I have looked at the code though, and now I'm not sure it will help, as it just re exposes the elm-syntax types, instead of redefining similar types but wihtout the Node's
 -- Later: create pull request with exercism elm-representer
 -- Later: add code coverage
 --  This isn't working at the moment, I think elm coverrage doesn't work with latest version of elm-test

@@ -1,6 +1,7 @@
 port module Main exposing (main)
 
 import Dict exposing (Dict)
+import Json.Encode
 import NormalizeElmCode
 import Platform exposing (Program)
 
@@ -10,7 +11,7 @@ type alias InputType =
 
 
 type alias OutputType =
-    String
+    ( String, String )
 
 
 port get : (InputType -> msg) -> Sub msg
@@ -63,12 +64,14 @@ transform unNormalised =
         |> writeResults
 
 
-writeResults : Result String ( Dict String String, String ) -> String
+writeResults : Result String ( Dict String String, String ) -> OutputType
 writeResults results =
     case results of
         Ok ( identifierMapping, normalizedElmCode ) ->
             --++ Debug.toString identifierMapping
-            normalizedElmCode
+            ( normalizedElmCode
+            , Json.Encode.encode 1 (Json.Encode.dict identity Json.Encode.string identifierMapping)
+            )
 
         Err message ->
-            message
+            ( message, "{}" )
