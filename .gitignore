@@ -14,3 +14,4 @@ exp/
 src/main.js
 .DS_Store
 .coverage
+/example-output/
