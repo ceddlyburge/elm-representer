@@ -1,6 +1,6 @@
 # Elm Representer
 
-[![<ORG_NAME>](https://circleci.com/gh/ceddlyburge/elm-representer.svg?style=svg)](<LINK>)
+[![ceddlyburge](https://circleci.com/gh/ceddlyburge/elm-representer.svg?style=svg)](https://circleci.com/gh/ceddlyburge/elm-representer)
 
 This outputs a normalized representation of Elm Code, to make automated analysis easier within Exercism.
 
